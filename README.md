@@ -17,15 +17,10 @@ There is a feature wishlist in issues, suggestions and contributions welcome!
 Installing
 ----------
 
-FreeGS is available on PyPI 
-
-    $ pip install --user freegs
-
-or clone/download this repository and run setup:
-
-    $ git clone https://github.com/bendudson/freegs.git
-    $ cd freegs
-    $ python setup.py install --user
+1. Create a new conda or virtual environment.
+2. Install the dependencies with `pip install -r requirements.txt` or `conda install -f requirements.txt`.
+3. Download this repository and install locally using `pip`.
+   `pip install -e .`
 
 Documentation
 -------------
