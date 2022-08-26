@@ -40,10 +40,11 @@ from numpy import (
     sum,
 )
 import numpy as np
+#from numba import jit, njit
 from warnings import warn
 
 
-def find_critical(R, Z, psi, discard_xpoints=True):
+def find_critical_old(R, Z, psi, discard_xpoints=True):
     """
     Find critical points
 
@@ -231,6 +232,142 @@ def find_critical(R, Z, psi, discard_xpoints=True):
     psi_axis = opoint[0][2]
     xpoint.sort(key=lambda x: (x[2] - psi_axis) ** 2)
 
+    return opoint, xpoint
+
+
+# Remove duplicates
+def remove_dup(points):
+	result = []
+	for n, p in enumerate(points):
+		dup = False
+		for p2 in result:
+			if (p[0] - p2[0]) ** 2 + (p[1] - p2[1]) ** 2 < 1e-5:
+				dup = True  # Duplicate
+				break
+		if not dup:
+			result.append(p)  # Add to the list
+	return result
+
+def find_critical(R,Z,psi, discard_xpoints=True, old=False):
+    if old:
+        opoint , xpoint = find_critical_old(R,Z,psi, discard_xpoints)
+    else:
+        opoint , xpoint = fastcrit(R,Z,psi, discard_xpoints)
+    return opoint, xpoint
+
+# # can decorate this with "@njit(fastmath=True, cache=True)" to bring it to 10x faster; without @njit, fastcrit is 3x faster anyways
+#@njit(fastmath=True, cache=True)
+def scan_for_crit(R, Z, psi):
+    dR = R[1, 0] - R[0, 0]
+    dZ = Z[0, 1] - Z[0, 0]
+    Bp2=np.zeros_like(psi)
+    psiR=Bp2.copy()
+    psiZ=Bp2.copy()
+    psiR[1:-1,1:-1] = 0.5*(psi[2:,1:-1]-psi[:-2,1:-1])/dR
+    psiZ[1:-1,1:-1] = 0.5*(psi[1:-1,2:]-psi[1:-1,:-2])/dZ
+    #
+ #    psiR[0,:]=(psi[1,:]-psi[0,:])/dR
+#     psiR[-1,:]=(psi[-1,:]-psi[-2,:])/dR
+#     psiR[1:-1,0]=(psi[1:,0]-psi[:-1,0])/dR
+#     psiR[1:-1,-1]=(psi[1:,-1]-psi[:-1,-0])/dR
+    #
+    Bp2[:,:]= (psiR**2 + psiZ**2)#/R[:,:]**2
+    #
+    xpoint = [(-999.0,-999.0,-999.0)]
+    opoint = [(-999.0,-999.0,-999.0)]
+    # start off by finding coarse values of Bp2 closest to 0.0 as in Ben Dudsons's routine
+    for i in range(1,len(Bp2)-1):
+        for j in range(1,len(Bp2[0])-1):
+            if (
+                (Bp2[i, j] < Bp2[i + 1, j + 1])
+                and (Bp2[i, j] < Bp2[i + 1, j])
+                and (Bp2[i, j] < Bp2[i + 1, j - 1])
+                and (Bp2[i, j] < Bp2[i - 1, j + 1])
+                and (Bp2[i, j] < Bp2[i - 1, j])
+                and (Bp2[i, j] < Bp2[i - 1, j - 1])
+                and (Bp2[i, j] < Bp2[i, j + 1])
+                and (Bp2[i, j] < Bp2[i, j - 1])
+            ):
+                # Found local minimum
+                R0 = R[i, j]
+                Z0 = Z[i, j]
+                fR , fZ = psiR[i,j], psiZ[i,j]
+                fRR = (psi[i+1,j]-2*psi[i,j]+psi[i-1,j])/dR**2
+                fZZ = (psi[i,j+1]-2*psi[i,j]+psi[i,j-1])/dZ**2
+                fRZ = 0.5*(psi[i+1,j+1] + psi[i-1,j-1] -psi[i-1,j+1] - psi[i+1,j-1] )/(dR*dZ)
+                det = fRR*fZZ-0.25*fRZ**2
+                delta_R = -(fR*fZZ-0.5*fRZ*fZ)/det
+                delta_Z = -(fZ*fRR-0.5*fRZ*fR)/det
+                #
+                if (np.abs(delta_R)<=dR and np.abs(delta_Z)<=dZ):
+                    est_psi = psi[i,j]+0.5*(fR*delta_R + fZ*delta_Z) #+ 0.5*(fRR*delta_R**2 + fZZ*delta_Z**2 + fRZ*delta_R*delta_Z)
+                    crpoint = (R0+delta_R , Z0+delta_Z , est_psi)
+                    if det>0.0 : opoint = [ crpoint ]+opoint
+                    else: xpoint = [ crpoint ]+xpoint
+    return opoint , xpoint
+
+
+def fastcrit(R, Z, psi, discard_xpoints=False):
+    opoint , xpoint = scan_for_crit(R,Z,psi)
+                #
+    xpoint.pop()
+    opoint.pop()
+    #xpoint = remove_dup(xpoint)
+    #opoint = remove_dup(opoint)
+    #
+    
+    if len(opoint) == 0:
+        # Can't order primary O-point, X-point so return
+        warn("Warning: No O points found")
+        return opoint, xpoint
+
+    # Find primary O-point by sorting by distance from middle of domain
+    Rmid = 0.5 * (R[-1, 0] + R[0, 0])
+    Zmid = 0.5 * (Z[0, -1] + Z[0, 0])
+    opoint.sort(key=lambda x: (x[0] - Rmid) ** 2 + (x[1] - Zmid) ** 2)
+
+    # Draw a line from the O-point to each X-point. Psi should be
+    # monotonic; discard those which are not
+
+    if discard_xpoints:
+        f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
+        Ro, Zo, Po = opoint[0]  # The primary O-point
+        xpt_keep = []
+        for xpt in xpoint:
+            Rx, Zx, Px = xpt
+
+            rline = linspace(Ro, Rx, num=50)
+            zline = linspace(Zo, Zx, num=50)
+
+            pline = f(rline, zline, grid=False)
+
+            if Px < Po:
+                pline *= -1.0  # Reverse, so pline is maximum at X-point
+
+            # Now check that pline is monotonic
+            # Tried finding maximum (argmax) and testing
+            # how far that is from the X-point. This can go
+            # wrong because psi can be quite flat near the X-point
+            # Instead here look for the difference in psi
+            # rather than the distance in space
+
+            maxp = amax(pline)
+            if (maxp - pline[-1]) / (maxp - pline[0]) > 0.001:
+                # More than 0.1% drop in psi from maximum to X-point
+                # -> Discard
+                continue
+
+            ind = argmin(pline)  # Should be at O-point
+            if (rline[ind] - Ro) ** 2 + (zline[ind] - Zo) ** 2 > 1e-4:
+                # Too far, discard
+                continue
+            xpt_keep.append(xpt)
+        xpoint = xpt_keep
+
+    # Sort X-points by distance to primary O-point in psi space
+    psi_axis = opoint[0][2]
+    xpoint.sort(key=lambda x: (x[2] - psi_axis) ** 2)
+    #
     return opoint, xpoint
 
 
