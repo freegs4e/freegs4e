@@ -129,6 +129,11 @@ References
 Versions
 --------
 
+### FreeGSFast versions
+0.6.1 26 August 2022
+  - Instantiation of FreeGSFast. No changes from FreeGS 0.6.1.
+
+### FreeGS versions
 0.6.1  11th February 2021
   - Fixes for HDF5 reading and writing
   - Fix Numpy deprecations

@@ -4,4 +4,4 @@
 *.geqdsk
 *.pdf
 *.h5
-
+*.egg-info
