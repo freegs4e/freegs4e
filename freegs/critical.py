@@ -465,7 +465,7 @@ def core_mask_old(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
 
     return mask
 
-def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None,old=True):
+def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None,old=False):
     if old: return core_mask_old(R, Z, psi, opoint, xpoint, psi_bndry)
     else: return inside_mask(R, Z, psi, opoint, xpoint, psi_bndry)
 
