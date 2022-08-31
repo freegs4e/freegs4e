@@ -21,6 +21,7 @@ along with FreeGS.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+from unittest import makeSuite
 from scipy import interpolate
 from numpy import zeros
 from numpy.linalg import inv
@@ -240,7 +241,6 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
 
     return opoint, xpoint
 
-
 # Remove duplicates
 def remove_dup(points):
 	result = []
@@ -377,7 +377,7 @@ def fastcrit(R, Z, psi, discard_xpoints=False):
     return opoint, xpoint
 
 
-def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
+def core_mask_old(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
     """
     Mark the parts of the domain which are in the core
 
@@ -465,6 +465,72 @@ def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
 
     return mask
 
+def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None,old=True):
+    if old: return core_mask_old(R, Z, psi, opoint, xpoint, psi_bndry)
+    else: return inside_mask(R, Z, psi, opoint, xpoint, psi_bndry)
+
+@njit(fastmath=True, cache=True)
+def inside_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
+    """
+    Similar to core_mask_old above, except:
+    (1) it's all stuff that can be JIT-compiled
+    (2) some stuff is vectorised
+    (3) the stack does not necessarily explore in only one direction, and it should be neat around the X-points
+    """
+    #
+    mask = zeros(psi.shape)
+    nx, ny = psi.shape
+    #
+    # Start and end points
+    Ro, Zo, psi_axis = opoint[0]
+    if psi_bndry is None:
+        _, _, psi_bndry = xpoint[0]
+    #
+    # Normalise psi
+    psin = (psi - psi_axis) / (psi_bndry - psi_axis)
+    #
+    xpt_inds = []
+    for rx, zx, _ in xpoint:
+        # Find nearest index
+        ix = argmin(abs(R[:, 0] - rx))
+        jx = argmin(abs(Z[0, :] - zx))
+        xpt_inds.append((ix, jx))
+        # Fill this point and all around with '2'# 
+        ilo , ihi = min(max(ix-1,0),nx-1) , max(0,min(ix+1,nx-1))
+        jlo , jhi = min(max(jx-1,0),ny-1) , max(0,min(jx+1,ny-1))
+        mask[ilo:ihi+1,jlo:jhi+1] = 2
+    #
+    # Find nearest index to start
+    rind = argmin(abs(R[:, 0] - Ro))
+    zind = argmin(abs(Z[0, :] - Zo))
+    #
+    stack = [(rind, zind)]  # List of points to inspect in future
+    #
+    while stack:  # Whilst there are any points left
+        i, j = stack.pop()  # Remove from list
+        #
+        # Check the point below (i,j-1) , append to list of stuff to be checked if valid
+        if (j > 0) and (psin[i, j - 1] < 1.0) and (mask[i, j - 1] < 0.5):
+            stack.append((i, j - 1))
+        # Check the point above
+        if (j < ny -1) and (psin[i, j + 1] < 1.0) and (mask[i, j + 1] < 0.5):
+            stack.append((i, j + 1))
+        #
+        # Scan along a row to the right
+        mask[i, j] = 1  # Mark as sampled in the core
+        #
+        if (i < nx - 1) and (psin[i + 1, j] < 1.0) and (mask[i + 1, j] < 0.5):
+            stack.append((i + 1, j))
+        if (i > 0) and (psin[i - 1, j] < 1.0) and (mask[i - 1, j] < 0.5):
+            stack.append((i - 1, j))
+    #
+    # Now return to X-point locations
+    for ix, jx in xpt_inds:
+         ilo , ihi = min(max(ix-1,0),nx-1) , max(0,min(ix+1,nx-1))
+         jlo , jhi = min(max(jx-1,0),ny-1) , max(0,min(jx+1,ny-1))
+         mask[ilo:ihi+1,jlo:jhi+1] = 1*(mask[ilo:ihi+1,jlo:jhi+1]==1)*(psin[ilo:ihi+1,jlo:jhi+1]<1.0)
+    #
+    return mask
 
 def find_psisurface(eq, psifunc, r0, z0, r1, z1, psival=1.0, n=100, axis=None):
     """
