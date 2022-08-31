@@ -40,7 +40,13 @@ from numpy import (
     sum,
 )
 import numpy as np
-#from numba import jit, njit
+
+try:
+    from numba import njit
+except ImportError:
+    def njit(*args, **kwargs):
+        return lambda f: f
+
 from warnings import warn
 
 
@@ -255,8 +261,8 @@ def find_critical(R,Z,psi, discard_xpoints=True, old=False):
         opoint , xpoint = fastcrit(R,Z,psi, discard_xpoints)
     return opoint, xpoint
 
-# # can decorate this with "@njit(fastmath=True, cache=True)" to bring it to 10x faster; without @njit, fastcrit is 3x faster anyways
-#@njit(fastmath=True, cache=True)
+# # this is 10x faster if the numba import works; otherwise, @njit is the identity and fastcrit is 3x faster anyways
+@njit(fastmath=True, cache=True)
 def scan_for_crit(R, Z, psi):
     dR = R[1, 0] - R[0, 0]
     dZ = Z[0, 1] - Z[0, 0]
