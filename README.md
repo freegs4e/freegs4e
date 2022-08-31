@@ -18,7 +18,7 @@ Installing
 ----------
 
 1. Create a new conda or virtual environment.
-2. Install the dependencies with `pip install -r requirements.txt` or `conda install -f requirements.txt`.
+2. Install the dependencies with `pip install -r requirements.txt` or `conda install --file requirements.txt`.
 3. Download this repository and install locally using `pip`.
    `pip install -e .`
 
