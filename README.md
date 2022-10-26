@@ -125,7 +125,11 @@ Versions
 --------
 
 ### FreeGSFast versions
-0.6.1 26 August 2022
+
+0.6.2  26 October 2022
+  - Minor bug fixes.
+
+0.6.1  26 August 2022
   - Instantiation of FreeGSFast. No changes from FreeGS 0.6.1.
 
 ### FreeGS versions
