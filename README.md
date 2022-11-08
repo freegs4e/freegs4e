@@ -126,6 +126,15 @@ Versions
 
 ### FreeGSFast versions
 
+0.7.0  8 Nobember 2022
+  - Implemented faster routines for finding critical points.
+    - Old `find_critical` renamed `find_critical_old`.
+    - `find_critical` by default now calls `fastcrit`.
+    - `fastcrit` calls `scan_for_crit`, then sorts the points, discards X-points and removes duplicated (like `find_critical_old`).
+    - `scan_for_crit`, decorated with numba, guesses criticals on the mesh grid and then refines them with a second-order expansion of psi. Tested separately on egg-carton 2D function and on MAST-U synthetic equilibria.
+    - Numba decorator returns identity if numba is not available.
+  - Fixed minor bug when determinant of psi derivatives is null on a grid point.
+
 0.6.2  26 October 2022
   - Minor bug fixes.
 
