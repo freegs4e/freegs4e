@@ -302,9 +302,10 @@ def scan_for_crit(R, Z, psi):
                 fZZ = (psi[i,j+1]-2*psi[i,j]+psi[i,j-1])/dZ**2
                 fRZ = 0.5*(psi[i+1,j+1] + psi[i-1,j-1] -psi[i-1,j+1] - psi[i+1,j-1] )/(dR*dZ)
                 det = fRR*fZZ-0.25*fRZ**2
-                delta_R = -(fR*fZZ-0.5*fRZ*fZ)/det
-                delta_Z = -(fZ*fRR-0.5*fRZ*fR)/det
                 #
+                if det!=0:
+                    delta_R = -(fR*fZZ-0.5*fRZ*fZ)/det
+                    delta_Z = -(fZ*fRR-0.5*fRZ*fR)/det
                 if (np.abs(delta_R)<=dR and np.abs(delta_Z)<=dZ):
                     est_psi = psi[i,j]+0.5*(fR*delta_R + fZ*delta_Z) #+ 0.5*(fRR*delta_R**2 + fZZ*delta_Z**2 + fRZ*delta_R*delta_Z)
                     crpoint = (R0+delta_R , Z0+delta_Z , est_psi)
@@ -316,6 +317,7 @@ def scan_for_crit(R, Z, psi):
 def fastcrit(R, Z, psi, discard_xpoints=False):
     opoint , xpoint = scan_for_crit(R,Z,psi)
                 #
+    # do NOT remove the "pop" command below, the lists were initialised with (-999.,-999.) so that numba could compile
     xpoint.pop()
     opoint.pop()
     #xpoint = remove_dup(xpoint)
