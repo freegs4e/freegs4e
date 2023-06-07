@@ -43,6 +43,8 @@ from numpy import clip, zeros, reshape, sqrt, pi
 import numpy as np
 
 from scipy.special import beta as spbeta
+from scipy.special import betainc as spbinc
+
 
 
 class Profile(object):
@@ -160,6 +162,9 @@ class ConstrainBetapIp(Profile):
         self.alpha_n = alpha_n
         self.Raxis = Raxis
 
+        # parameter to indicate that this is coming from FreeGSFast
+        self.fast = True
+
     def Jtor(self, R, Z, psi, psi_bndry=None):
         """Calculate toroidal plasma current
 
@@ -167,6 +172,28 @@ class ConstrainBetapIp(Profile):
 
         where jtorshape is a shape function
         L and Beta0 are parameters which are set by constraints
+        This function has been adapted from FreeGS to be more computationally efficient by calculating the integrals analytically and to save the xpt, opt and Jtor so they don't have to be recomputed
+
+        Parameters
+        ----------
+        R : np.ndarray
+            R coordinates of the grid points
+        Z : np.ndarray
+            Z coordinates of the grid points
+        psi : np.ndarray
+            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+        psi_bndry : float, optional
+            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+
+        Returns
+        -------
+        Jtor : np.ndarray
+            Toroidal current density
+
+        Raises
+        ------
+        ValueError
+            Raises ValueError if it cannot find an O-point
         """
 
         # Analyse the equilibrium, finding O- and X-points
@@ -204,24 +231,29 @@ class ConstrainBetapIp(Profile):
 
         # Need integral of jtorshape to calculate pressure
         # Note factor to convert from normalised psi integral
-        def pshape(psinorm):
-            shapeintegral, _ = quad(
-                lambda x: (1.0 - x ** self.alpha_m) ** self.alpha_n, psinorm, 1.0
-            )
-            shapeintegral *= psi_bndry - psi_axis
-            return shapeintegral
+        # def pshape(psinorm):
+        #     shapeintegral, _ = quad(
+        #         lambda x: (1.0 - x ** self.alpha_m) ** self.alpha_n, psinorm, 1.0
+        #     )
+        #     shapeintegral *= psi_bndry - psi_axis
+        #     return shapeintegral
 
         # Pressure is
         #
         # p(psinorm) = - (L*Beta0/Raxis) * pshape(psinorm)
         #
 
+        shapeintegral0 = spbeta(1./self.alpha_m , 1.0+self.alpha_n)/self.alpha_m
+
         nx, ny = psi_norm.shape
         pfunc = zeros((nx, ny))
-        for i in range(1, nx - 1):
-            for j in range(1, ny - 1):
-                if (psi_norm[i, j] >= 0.0) and (psi_norm[i, j] < 1.0):
-                    pfunc[i, j] = pshape(psi_norm[i, j])
+        # for i in range(1, nx - 1):
+        #     for j in range(1, ny - 1):
+        #         if (psi_norm[i, j] >= 0.0) and (psi_norm[i, j] < 1.0):
+        #             pfunc[i, j] = pshape(psi_norm[i, j])
+        
+        pfunc=shapeintegral0*(psi_bndry - psi_axis)*(1.0-spbinc(1./self.alpha_m , 1.0+self.alpha_n, np.clip(psi_norm,0.0001,0.9999)**(1/self.alpha_m)))
+
         if mask is not None:
             pfunc *= mask
 
@@ -229,13 +261,13 @@ class ConstrainBetapIp(Profile):
         # betap = (8pi/mu0) * int(p)dRdZ / Ip^2
         #       = - (8pi/mu0) * (L*Beta0/Raxis) * intp / Ip^2
 
-        intp = romb(romb(pfunc)) * dR * dZ
+        intp = np.sum(pfunc)*dR*dZ  # romb(romb(pfunc)) * dR * dZ
 
         LBeta0 = -self.betap * (mu0 / (8.0 * pi)) * self.Raxis * self.Ip ** 2 / intp
 
         # Integrate current components
-        IR = romb(romb(jtorshape * R / self.Raxis)) * dR * dZ
-        I_R = romb(romb(jtorshape * self.Raxis / R)) * dR * dZ
+        IR = np.sum(jtorshape * R /self.Raxis)*dR*dZ # romb(romb(jtorshape * R / self.Raxis)) * dR * dZ
+        I_R = np.sum(jtorshape * self.Raxis / R)*dR*dZ # romb(romb(jtorshape * self.Raxis / R)) * dR * dZ
 
         # Toroidal plasma current Ip is
         #
@@ -250,11 +282,15 @@ class ConstrainBetapIp(Profile):
 
         # Toroidal current
         Jtor = L * (Beta0 * R / self.Raxis + (1 - Beta0) * self.Raxis / R) * jtorshape
+        self.jtor = Jtor
 
         self.L = L
         self.Beta0 = Beta0
         self.psi_bndry = psi_bndry
         self.psi_axis = psi_axis
+
+        self.xpt = xpt
+        self.opt = opt
 
         return Jtor
 
@@ -308,6 +344,9 @@ class ConstrainPaxisIp(Profile):
         self.alpha_n = alpha_n
         self.Raxis = Raxis
 
+        # parameter to indicate that this is coming from FreeGSFast
+        self.fast = True
+        
     def Jtor(self, R, Z, psi, psi_bndry=None):
         """Calculate toroidal plasma current
 
@@ -315,6 +354,29 @@ class ConstrainPaxisIp(Profile):
 
         where jtorshape is a shape function
         L and Beta0 are parameters which are set by constraints
+
+        This function is adapted from FreeGS to save the xpts, opts, and Jtor so they don't have to be recomputed
+
+        Parameters
+        ----------
+        R : np.ndarray
+            R coordinates of the grid points
+        Z : np.ndarray
+            Z coordinates of the grid points
+        psi : np.ndarray
+            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+        psi_bndry : float, optional
+            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+
+        Returns
+        -------
+        Jtor : np.ndarray
+            Toroidal current density
+
+        Raises
+        ------
+        ValueError
+            Raises ValueError if it cannot find an O-point
         """
 
         # Analyse the equilibrium, finding O- and X-points
@@ -382,11 +444,15 @@ class ConstrainPaxisIp(Profile):
 
         # Toroidal current
         Jtor = L * (Beta0 * R / self.Raxis + (1 - Beta0) * self.Raxis / R) * jtorshape
+        self.jtor = Jtor
 
         self.L = L
         self.Beta0 = Beta0
         self.psi_bndry = psi_bndry
         self.psi_axis = psi_axis
+
+        self.xpt = xpt
+        self.opt = opt
 
         return Jtor
 
