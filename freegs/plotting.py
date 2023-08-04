@@ -70,7 +70,7 @@ def plotConstraints(control, axis=None, show=True):
     return axis
 
 
-def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True):
+def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=True):
     """
     Plot the equilibrium flux surfaces
 
@@ -100,28 +100,41 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True):
 
     if oxpoints:
         # Add O- and X-points
-        opt, xpt = critical.find_critical(eq.R, eq.Z, psi)
+        # opt, xpt = critical.find_critical(eq.R, eq.Z, psi)
+        opt = eq._profiles.opt
+        xpt = eq._profiles.xpt
 
         for r, z, _ in xpt:
             axis.plot(r, z, "ro")
         for r, z, _ in opt:
             axis.plot(r, z, "go")
 
-        if xpt:
+        if xpt is not []:
             psi_bndry = xpt[0][2]
-            axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r")
+            if eq._profiles.flag_limiter:
+                axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r", linestyles = 'dashed')
+                axis.contour(eq.R, eq.Z, psi*eq._profiles.diverted_core_mask, levels=[eq._profiles.psi_bndry], colors="k")
+            else:
+                axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r")
 
             # Add legend
             axis.plot([], [], "ro", label="X-points")
             axis.plot([], [], "r", label="Separatrix")
-        if opt:
+        if opt is not []:
             axis.plot([], [], "go", label="O-points")
+
 
     if wall and eq.tokamak.wall and len(eq.tokamak.wall.R):
         axis.plot(
             list(eq.tokamak.wall.R) + [eq.tokamak.wall.R[0]],
             list(eq.tokamak.wall.Z) + [eq.tokamak.wall.Z[0]],
             "k",
+        )
+    if limiter and eq.tokamak.limiter and len(eq.tokamak.limiter.R):
+        axis.plot(
+            list(eq.tokamak.limiter.R) + [eq.tokamak.limiter.R[0]],
+            list(eq.tokamak.limiter.Z) + [eq.tokamak.limiter.Z[0]],
+            "k--",lw=.5
         )
 
     if show:
