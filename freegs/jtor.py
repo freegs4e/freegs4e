@@ -391,6 +391,10 @@ class ConstrainBetapIp(Profile):
         ValueError
             Raises ValueError if it cannot find an O-point
         """
+        
+        if psi_bndry is None:
+            psi_bndry = psi[0,0]
+            self.psi_bndry = psi_bndry
 
         dR = R[1, 0] - R[0, 0]
         dZ = Z[0, 1] - Z[0, 0]
