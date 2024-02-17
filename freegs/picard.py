@@ -76,23 +76,26 @@ def solve(
     # Start main loop
     while True:
         if show:
-            # Plot state of plasma equilibrium
-            if pause < 0:
-                fig = plt.figure()
-                axis = fig.add_subplot(111)
-            else:
-                axis.clear()
+            try:
+                # Plot state of plasma equilibrium
+                if pause < 0:
+                    fig = plt.figure()
+                    axis = fig.add_subplot(111)
+                else:
+                    axis.clear()
 
-            plotEquilibrium(eq, axis=axis, show=False)
+                plotEquilibrium(eq, axis=axis, show=False)
 
-            if pause < 0:
-                # Wait for user to close the window
-                plt.show()
-            else:
-                # Update the canvas and pause
-                # Note, a short pause is needed to force drawing update
-                axis.figure.canvas.draw()
-                plt.pause(pause)
+                if pause < 0:
+                    # Wait for user to close the window
+                    plt.show()
+                else:
+                    # Update the canvas and pause
+                    # Note, a short pause is needed to force drawing update
+                    axis.figure.canvas.draw()
+                    plt.pause(pause)
+            except:
+                pass
 
         # Copy psi to compare at the end
         psi_last = psi.copy()
@@ -127,6 +130,10 @@ def solve(
             raise RuntimeError(
                 "Picard iteration failed to converge (too many iterations)"
             )
+        
+        eq._profiles = profiles
+        
+
     if convergenceInfo: 
         return array(psi_maxchange_iterations),\
                array(psi_relchange_iterations)

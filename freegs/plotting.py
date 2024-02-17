@@ -113,7 +113,9 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
             psi_bndry = xpt[0][2]
             if eq._profiles.flag_limiter:
                 axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r", linestyles = 'dashed')
-                axis.contour(eq.R, eq.Z, psi*eq._profiles.diverted_core_mask, levels=[eq._profiles.psi_bndry], colors="k")
+                # axis.contour(eq.R, eq.Z, psi*eq._profiles.diverted_core_mask, levels=[eq._profiles.psi_bndry], colors="k")
+                axis.contour(eq.R, eq.Z, psi*make_broad_mask(eq._profiles.diverted_core_mask), levels=[eq._profiles.psi_bndry], colors="k")
+
             else:
                 axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r")
 
@@ -142,3 +144,30 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
         plt.show()
 
     return axis
+
+
+
+import numpy as np
+
+def make_broad_mask(mask, layer_size=3):
+    """Enlarges a mask with the points just outside the input, with a width=`layer_size`
+
+    Parameters
+    ----------
+    layer_size : int, optional
+        Width of the layer outside the limiter, by default 3
+
+    Returns
+    -------
+    layer_mask : np.ndarray
+        Mask of the points outside the limiter within a distance of `layer_size` from the limiter
+    """
+    nx, ny = np.shape(mask)
+    layer_mask = np.zeros(np.array([nx, ny]) + 2 * np.array([layer_size, layer_size]))
+
+    for i in np.arange(-layer_size, layer_size + 1) + layer_size:
+        for j in np.arange(-layer_size, layer_size + 1) + layer_size:
+            layer_mask[i : i + nx, j : j + ny] += mask
+    layer_mask = layer_mask[layer_size : layer_size + nx, layer_size : layer_size + ny]
+    layer_mask = (layer_mask > 0).astype(bool)
+    return layer_mask
