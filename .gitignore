@@ -5,4 +5,5 @@
 *.pdf
 *.h5
 *.egg-info
+.DS_Store
 *__pycache__
