@@ -17,6 +17,8 @@ There is a feature wishlist in issues, suggestions and contributions welcome!
 Installing
 ----------
 
+__NB__ If you need freegsfast for FreeGSNKE, do not follow the steps below: please follow the instructions in the FreeGSNKE readme instead.
+
 1. Create a new conda or virtual environment.
 2. Install the dependencies with `pip install -r requirements.txt` or `conda install --file requirements.txt`.
 3. Download this repository and install locally using `pip`.
