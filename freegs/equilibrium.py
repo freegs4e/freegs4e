@@ -111,7 +111,8 @@ class Equilibrium:
 
         self._current = current  # Plasma current
 
-        self._updatePlasmaPsi(psi)  # Needs to be after _pgreen
+        self.plasma_psi = psi
+        # self._updatePlasmaPsi(psi)  # Needs to be after _pgreen
 
         # Create the solver
         if order == 2:
