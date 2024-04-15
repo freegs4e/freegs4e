@@ -976,7 +976,7 @@ class Fiesta_Topiol(Profile):
         L = self.Ip/(np.sum(Jtor)*dR*dZ)
         self.jtor = L*Jtor
 
-        # self.L = L
+        self.L = L
         # self.Beta0 = Beta0
 
         return self.jtor
@@ -1167,8 +1167,11 @@ class Lao85(Profile):
         if self.Ip_logic:
             L = self.Ip/(np.sum(Jtor)*dR*dZ)
             Jtor = L*Jtor
+        else:
+            L = 1.
 
         self.jtor = Jtor.copy()
+        self.L = L
 
         return self.jtor
 
@@ -1180,16 +1183,20 @@ class Lao85(Profile):
         dp/dpsi as a function of normalised psi. 0 outside core
         Calculate pprimeshape inside the core only
         """
-        shape = (1.0 - np.clip(pn, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n
-        return self.L * self.Beta0 / self.Raxis * shape
+        shape = np.clip(np.array(pn), 0.0, 1.0)[np.newaxis, :]**self.alpha_exp[:, np.newaxis]
+        shape *= self.alpha[:, np.newaxis]
+        shape = np.sum(shape, axis=0)  
+        return self.L * shape / self.Raxis  
 
     def ffprime(self, pn):
         """
         f * df/dpsi as a function of normalised psi. 0 outside core.
         Calculate ffprimeshape inside the core only.
         """
-        shape = (1.0 - np.clip(pn, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n
-        return mu0 * self.L * (1 - self.Beta0) * self.Raxis * shape
+        shape = np.clip(np.array(pn), 0.0, 1.0)[np.newaxis, :]**self.beta_exp[:, np.newaxis]
+        shape *= self.beta[:, np.newaxis]
+        shape = np.sum(shape, axis=0)  
+        return self.L * shape * self.Raxis
 
     def fvac(self):
         return self._fvac
