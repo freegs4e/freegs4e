@@ -27,7 +27,8 @@ along with FreeGS.  If not, see <http://www.gnu.org/licenses/>.
 from .gradshafranov import Greens, GreensBr, GreensBz, mu0
 import numpy as np
 import numbers
-
+from matplotlib.patches import Rectangle
+import matplotlib.pyplot as plt
 
 class AreaCurrentLimit:
     """
@@ -114,7 +115,11 @@ class Coil:
         """
         Calculate poloidal flux at (R,Z)
         """
-        return self.controlPsi(R, Z) * self.current
+        if np.abs(self.current) > 1e-5:
+            psi_ = self.controlPsi(R, Z) * self.current
+        else:
+            psi_ = 0
+        return psi_
 
     def createPsiGreens(self, R, Z):
         """
@@ -134,13 +139,21 @@ class Coil:
         """
         Calculate radial magnetic field Br at (R,Z)
         """
-        return self.controlBr(R, Z) * self.current
+        if np.abs(self.current) > 1e-5:
+            br = self.controlBr(R, Z) * self.current
+        else:
+            br = 0
+        return br
 
     def Bz(self, R, Z):
         """
         Calculate vertical magnetic field Bz at (R,Z)
         """
-        return self.controlBz(R, Z) * self.current
+        if np.abs(self.current) > 1e-5:
+            bz = self.controlBz(R, Z) * self.current
+        else:
+            bz = 0
+        return bz
 
     def controlPsi(self, R, Z):
         """
@@ -263,14 +276,38 @@ class Coil:
 
         The area of the coil is used to set the radius
         """
-        minor_radius = np.sqrt(self.area / np.pi)
+        
+        try:
+            axis = self.plot_nke(axis, show)
+        except:
 
-        import matplotlib.pyplot as plt
+            if axis is None:
+                fig = plt.figure()
+                axis = fig.add_subplot(111)
+
+            minor_radius = np.sqrt(self.area / np.pi)
+
+
+            circle = plt.Circle((self.R, self.Z), minor_radius, color="b")
+            axis.add_artist(circle)
+
+        return axis
+
+    def plot_nke(self, axis=None, show=False):
+        """
+        Plot the coil location, using axis if given
+
+        """
+        self.rectangle = Rectangle((self.R - self.dR/2,
+                                    self.Z - self.dZ/2),
+                                    width=self.dR,
+                                    height=self.dZ, 
+                                    facecolor = 'b')
 
         if axis is None:
             fig = plt.figure()
             axis = fig.add_subplot(111)
 
-        circle = plt.Circle((self.R, self.Z), minor_radius, color="b")
-        axis.add_artist(circle)
+        axis.add_patch(self.rectangle)
         return axis
+

@@ -25,6 +25,8 @@ along with FreeGS.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from .coil import Coil, AreaCurrentLimit
 from .gradshafranov import Greens, GreensBr, GreensBz
+from matplotlib.patches import Rectangle
+import matplotlib.pyplot as plt
 
 
 class MultiCoil(Coil):
@@ -247,14 +249,36 @@ class MultiCoil(Coil):
         """
         Plot the coil including turn locations
         """
-        import matplotlib.pyplot as plt
+        try:
+            axis = self.plot_nke(axis, show)
+        except:
+            if axis is None:
+                fig = plt.figure()
+                axis = fig.add_subplot(111)
+
+            plt.plot(self.Rfil, self.Zfil, "bo")
+
+        return axis
+    
+    def plot_nke(self, axis=None, show=False):
+        """
+        Plot the location of each filament, using axis if given
+
+        """
 
         if axis is None:
             fig = plt.figure()
             axis = fig.add_subplot(111)
 
-        plt.plot(self.Rfil, self.Zfil, "bo")
-
+        for i in np.arange(len(self.Rfil)):
+            self.rectangle = Rectangle((self.Rfil[i] - self.dR/2,
+                                    self.Zfil[i] - self.dZ/2),
+                                    width=self.dR,
+                                    height=self.dZ, 
+                                    facecolor = 'dodgerblue',
+                                    edgecolor='b',
+                                    linewidth=1)
+            axis.add_patch(self.rectangle)
         return axis
 
     @property
