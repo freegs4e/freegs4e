@@ -819,7 +819,7 @@ class ConstrainPaxisIp(Profile):
 
 
 
-class Fiesta_Topiol(Profile):
+class Fiesta_Topeol(Profile):
     """
     As in Fiesta. Implements profile function as in Jeon arxiv:1503.03135 eq. 5
     and in Lao et al 1985 eq. 13.
