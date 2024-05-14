@@ -1114,8 +1114,8 @@ class Lao85(Profile):
             mask = None
 
         # check correct sorting between psi_axis and psi_bndry
-        if (psi_axis-psi_bndry)*self.Ip < 0:
-            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+        # if (psi_axis-psi_bndry)*self.Ip < 0:
+        #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
     
 
         # added with respect to original Jtor
