@@ -97,13 +97,8 @@ class Equilibrium:
 
         if psi is None:
             # Starting guess for psi
-            xx, yy = meshgrid(linspace(0, 1, nx), linspace(0, 1, ny), indexing="ij")
-            psi = exp(-((xx - 0.5) ** 2 + (yy - 0.5) ** 2) / 0.4 ** 2)
-
-            psi[0, :] = 0.0
-            psi[:, 0] = 0.0
-            psi[-1, :] = 0.0
-            psi[:, -1] = 0.0
+            psi = self.create_psi_plasma_default()
+        self.plasma_psi = psi
 
         # Calculate coil Greens functions. This is an optimisation,
         # used in self.psi() to speed up calculations
@@ -111,7 +106,6 @@ class Equilibrium:
 
         self._current = current  # Plasma current
 
-        self.plasma_psi = psi
         # self._updatePlasmaPsi(psi)  # Needs to be after _pgreen
 
         # Create the solver
@@ -128,6 +122,21 @@ class Equilibrium:
         self._solver = multigrid.createVcycle(
             nx, ny, generator, nlevels=1, ncycle=1, niter=2, direct=True
         )
+
+    def create_psi_plasma_default(self, ):
+        """Creates a Gaussian starting guess for plasma_psi
+            """
+        nx,ny = np.shape(self.R)
+        xx, yy = meshgrid(linspace(0, 1, nx), linspace(0, 1, ny), indexing="ij")
+        psi = exp(-((xx - 0.5) ** 2 + (yy - 0.5) ** 2) / 0.4 ** 2)
+        # this is a freegsfast addition:
+        psi = psi**4
+
+        psi[0, :] = 0.0
+        psi[:, 0] = 0.0
+        psi[-1, :] = 0.0
+        psi[:, -1] = 0.0
+        return psi
 
     def setSolverVcycle(self, nlevels=1, ncycle=1, niter=1, direct=True):
         """

@@ -347,6 +347,11 @@ class ConstrainBetapIp(Profile):
             psi_bndry = psi[0, 0]
             mask = None
 
+        # check correct sorting between psi_axis and psi_bndry
+        if (psi_axis-psi_bndry)*self.Ip < 0:
+            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+
+
         # added with respect to original Jtor
         self.xpt = xpt
         self.opt = opt
@@ -690,6 +695,11 @@ class ConstrainPaxisIp(Profile):
             psi_bndry = psi[0, 0]
             mask = None
 
+        # check correct sorting between psi_axis and psi_bndry
+        if (psi_axis-psi_bndry)*self.Ip < 0:
+            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+
+
         # added with respect to original Jtor
         self.xpt = xpt
         self.opt = opt
@@ -905,6 +915,11 @@ class Fiesta_Topeol(Profile):
             psi_bndry = psi[0, 0]
             mask = None
 
+        # check correct sorting between psi_axis and psi_bndry
+        if (psi_axis-psi_bndry)*self.Ip < 0:
+            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+
+
         # added with respect to original Jtor
         self.xpt = xpt
         self.opt = opt
@@ -1098,6 +1113,11 @@ class Lao85(Profile):
             psi_bndry = psi[0, 0]
             mask = None
 
+        # check correct sorting between psi_axis and psi_bndry
+        if (psi_axis-psi_bndry)*self.Ip < 0:
+            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+    
+
         # added with respect to original Jtor
         self.xpt = xpt
         self.opt = opt
@@ -1165,7 +1185,10 @@ class Lao85(Profile):
             Jtor *= mask
 
         if self.Ip_logic:
-            L = self.Ip/(np.sum(Jtor)*dR*dZ)
+            jtorIp = np.sum(Jtor)
+            if jtorIp == 0:
+                raise ValueError("Total plasma current is zero! Cannot renormalise.")
+            L = self.Ip/(jtorIp*dR*dZ)
             Jtor = L*Jtor
         else:
             L = 1.

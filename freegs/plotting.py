@@ -91,7 +91,7 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
         fig = plt.figure()
         axis = fig.add_subplot(111)
 
-    levels = linspace(amin(psi), amax(psi), 100)
+    levels = linspace(amin(psi), amax(psi), 50)
 
     axis.contour(R, Z, psi, levels=levels)
     axis.set_aspect("equal")
