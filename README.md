@@ -5,16 +5,6 @@ FreeGSFast is a package based on [FreeGS](https://github.com/freegs-plasma/freeg
 
 The primary use case for FreeGSFast is to provide a fast equilibrium solver for the [FreeGSNKE](https://gitlab.stfc.ac.uk/farscape-ws3/freegsnke) code. This has resulted in some changes to the FreeGS codebase that mean FreeGSFast is no longer a drop-in replacement for FreeGS.
 
-The primary use case for FreeGSFast is to provide a fast equilibrium solver for the [FreeGSNKE](https://gitlab.stfc.ac.uk/farscape-ws3/freegsnke) code. This has resulted in some changes to the FreeGS codebase that mean FreeGSFast is no longer a drop-in replacement for FreeGS.
-
-This Python module calculates plasma equilibria for tokamak fusion experiments,
-by solving the Grad-Shafranov equation with free boundaries. Given a set of coils,
-plasma profiles and shape, FreeGS finds the currents in the coils which produce
-a steady-state solution in force balance.
-
-**Note** This is a work in progress, and probably contains bugs. 
-There is a feature wishlist in issues, suggestions and contributions welcome!
-
 Installing
 ----------
 
