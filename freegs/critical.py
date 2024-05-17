@@ -41,10 +41,12 @@ from numpy import (
     sum,
 )
 import numpy as np
+import warnings
 
 try:
     from numba import njit
 except ImportError:
+    warnings.warn("Numba not found, using slower version")
     def njit(*args, **kwargs):
         return lambda f: f
 
