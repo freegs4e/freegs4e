@@ -1,10 +1,9 @@
 FreeGS: Free boundary Grad-Shafranov solver
 ===========================================
 
-[![License](https://img.shields.io/badge/license-GPL-blue.svg)](https://img.shields.io/badge/license-GPL-blue.svg)
-[![py3comp](https://img.shields.io/badge/py3-compatible-brightgreen.svg)](https://img.shields.io/badge/py3-compatible-brightgreen.svg)
-[![Build Status](https://github.com/bendudson/freegs/workflows/Tests/badge.svg)](https://github.com/bendudson/freegs/workflows/Tests/badge.svg)
-[![codecov](https://codecov.io/gh/bendudson/freegs/branch/master/graph/badge.svg?token=4dc6aHbu7K)](https://codecov.io/gh/bendudson/freegs)
+FreeGSFast is a package based on [FreeGS](https://github.com/freegs-plasma/freegs), which calculates plasma equilibria for tokamak fusion experiments by solving the free boundary Grad-Shafranov equation. FreeGSFast is forked from FreeGS 0.6.1 and includes some performance optimisations that may also limit the use cases.
+
+The primary use case for FreeGSFast is to provide a fast equilibrium solver for the [FreeGSNKE](https://gitlab.stfc.ac.uk/farscape-ws3/freegsnke) code. This has resulted in some changes to the FreeGS codebase that mean FreeGSFast is no longer a drop-in replacement for FreeGS.
 
 This Python module calculates plasma equilibria for tokamak fusion experiments,
 by solving the Grad-Shafranov equation with free boundaries. Given a set of coils,
@@ -17,12 +16,8 @@ There is a feature wishlist in issues, suggestions and contributions welcome!
 Installing
 ----------
 
-__NB__ If you need freegsfast for FreeGSNKE, do not follow the steps below: please follow the instructions in the FreeGSNKE readme instead.
-
-1. Create a new conda or virtual environment.
-2. Install the dependencies with `pip install -r requirements.txt` or `conda install --file requirements.txt`.
-3. Download this repository and install locally using `pip`.
-   `pip install -e .`
+1. Create a new virtual environment.
+2. Download this repository and install locally using `pip install -e .`
 
 Documentation
 -------------
