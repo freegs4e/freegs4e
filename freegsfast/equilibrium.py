@@ -130,7 +130,7 @@ class Equilibrium:
         xx, yy = meshgrid(linspace(0, 1, nx), linspace(0, 1, ny), indexing="ij")
         psi = exp(-((xx - 0.5) ** 2 + (yy - 0.5) ** 2) / 0.4 ** 2)
         # this is a freegsfast addition:
-        psi = psi**4
+        # psi = psi**4
 
         psi[0, :] = 0.0
         psi[:, 0] = 0.0

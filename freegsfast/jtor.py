@@ -1187,6 +1187,7 @@ class Lao85(Profile):
         if self.Ip_logic:
             jtorIp = np.sum(Jtor)
             if jtorIp == 0:
+                self.problem_psi = psi
                 raise ValueError("Total plasma current is zero! Cannot renormalise.")
             L = self.Ip/(jtorIp*dR*dZ)
             Jtor = L*Jtor
