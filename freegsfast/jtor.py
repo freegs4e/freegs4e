@@ -203,7 +203,7 @@ class ConstrainBetapIp(Profile):
         psi_axis = opt[0][2]
 
         if psi_bndry is not None:
-            mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+            mask = critical.inside_mask(R, Z, psi, opt, xpt, mask_outside_limiter, psi_bndry=psi_bndry)
         elif xpt:
             psi_bndry = xpt[0][2]
             mask = critical.core_mask(R, Z, psi, opt, xpt)
@@ -335,30 +335,30 @@ class ConstrainBetapIp(Profile):
         opt, xpt = critical.find_critical(R, Z, psi)
         if not opt:
             raise ValueError("No O-points found!")
-        psi_axis = opt[0][2]
+        # psi_axis = opt[0][2]
 
-        if psi_bndry is not None:
-            mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
-        elif xpt:
-            psi_bndry = xpt[0][2]
-            mask = critical.core_mask(R, Z, psi, opt, xpt)
-        else:
-            # No X-points
-            psi_bndry = psi[0, 0]
-            mask = None
+        # if psi_bndry is not None:
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+        # elif xpt:
+        #     psi_bndry = xpt[0][2]
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt)
+        # else:
+        #     # No X-points
+        #     psi_bndry = psi[0, 0]
+        #     mask = None
 
-        # check correct sorting between psi_axis and psi_bndry
-        if (psi_axis-psi_bndry)*self.Ip < 0:
-            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+        # # check correct sorting between psi_axis and psi_bndry
+        # if (psi_axis-psi_bndry)*self.Ip < 0:
+        #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
 
 
-        # added with respect to original Jtor
-        self.xpt = xpt
-        self.opt = opt
-        self.psi_bndry = psi_bndry
-        self.psi_axis = psi_axis
+        # # added with respect to original Jtor
+        # self.xpt = xpt
+        # self.opt = opt
+        # self.psi_bndry = psi_bndry
+        # self.psi_axis = psi_axis
 
-        return mask
+        return  opt, xpt
     
         
     def Jtor_part2(self, R, Z, psi, psi_bndry, mask):
@@ -683,30 +683,30 @@ class ConstrainPaxisIp(Profile):
         opt, xpt = critical.find_critical(R, Z, psi)
         if not opt:
             raise ValueError("No O-points found!")
-        psi_axis = opt[0][2]
+        # psi_axis = opt[0][2]
 
-        if psi_bndry is not None:
-            mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
-        elif xpt:
-            psi_bndry = xpt[0][2]
-            mask = critical.core_mask(R, Z, psi, opt, xpt)
-        else:
-            # No X-points
-            psi_bndry = psi[0, 0]
-            mask = None
+        # if psi_bndry is not None:
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+        # elif xpt:
+        #     psi_bndry = xpt[0][2]
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt)
+        # else:
+        #     # No X-points
+        #     psi_bndry = psi[0, 0]
+        #     mask = None
 
-        # check correct sorting between psi_axis and psi_bndry
-        if (psi_axis-psi_bndry)*self.Ip < 0:
-            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+        # # check correct sorting between psi_axis and psi_bndry
+        # if (psi_axis-psi_bndry)*self.Ip < 0:
+        #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
 
 
-        # added with respect to original Jtor
-        self.xpt = xpt
-        self.opt = opt
-        self.psi_bndry = psi_bndry
-        self.psi_axis = psi_axis
+        # # added with respect to original Jtor
+        # self.xpt = xpt
+        # self.opt = opt
+        # self.psi_bndry = psi_bndry
+        # self.psi_axis = psi_axis
 
-        return mask
+        return opt, xpt
 
         
     def Jtor_part2(self, R, Z, psi, psi_bndry, mask):
@@ -903,30 +903,30 @@ class Fiesta_Topeol(Profile):
         opt, xpt = critical.find_critical(R, Z, psi)
         if not opt:
             raise ValueError("No O-points found!")
-        psi_axis = opt[0][2]
+        # psi_axis = opt[0][2]
 
-        if psi_bndry is not None:
-            mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
-        elif xpt:
-            psi_bndry = xpt[0][2]
-            mask = critical.core_mask(R, Z, psi, opt, xpt)
-        else:
-            # No X-points
-            psi_bndry = psi[0, 0]
-            mask = None
+        # if psi_bndry is not None:
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+        # elif xpt:
+        #     psi_bndry = xpt[0][2]
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt)
+        # else:
+        #     # No X-points
+        #     psi_bndry = psi[0, 0]
+        #     mask = None
 
-        # check correct sorting between psi_axis and psi_bndry
-        if (psi_axis-psi_bndry)*self.Ip < 0:
-            raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+        # # check correct sorting between psi_axis and psi_bndry
+        # if (psi_axis-psi_bndry)*self.Ip < 0:
+        #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
 
 
-        # added with respect to original Jtor
-        self.xpt = xpt
-        self.opt = opt
-        self.psi_bndry = psi_bndry
-        self.psi_axis = psi_axis
+        # # added with respect to original Jtor
+        # self.xpt = xpt
+        # self.opt = opt
+        # self.psi_bndry = psi_bndry
+        # self.psi_axis = psi_axis
 
-        return mask
+        return opt, xpt
 
         
     def Jtor_part2(self, R, Z, psi, psi_bndry, mask):
@@ -1101,30 +1101,30 @@ class Lao85(Profile):
         opt, xpt = critical.find_critical(R, Z, psi)
         if not opt:
             raise ValueError("No O-points found!")
-        psi_axis = opt[0][2]
+        # psi_axis = opt[0][2]
 
-        if psi_bndry is not None:
-            mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
-        elif xpt:
-            psi_bndry = xpt[0][2]
-            mask = critical.core_mask(R, Z, psi, opt, xpt)
-        else:
-            # No X-points
-            psi_bndry = psi[0, 0]
-            mask = None
+        # if psi_bndry is not None:
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+        # elif xpt:
+        #     psi_bndry = xpt[0][2]
+        #     mask = critical.core_mask(R, Z, psi, opt, xpt)
+        # else:
+        #     # No X-points
+        #     psi_bndry = psi[0, 0]
+        #     mask = None
 
-        # check correct sorting between psi_axis and psi_bndry
-        # if (psi_axis-psi_bndry)*self.Ip < 0:
-        #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+        # # check correct sorting between psi_axis and psi_bndry
+        # # if (psi_axis-psi_bndry)*self.Ip < 0:
+        # #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
     
 
-        # added with respect to original Jtor
-        self.xpt = xpt
-        self.opt = opt
-        self.psi_bndry = psi_bndry
-        self.psi_axis = psi_axis
+        # # added with respect to original Jtor
+        # self.xpt = xpt
+        # self.opt = opt
+        # self.psi_bndry = psi_bndry
+        # self.psi_axis = psi_axis
 
-        return mask
+        return opt, xpt
 
         
     def Jtor_part2(self, R, Z, psi, psi_bndry, mask):

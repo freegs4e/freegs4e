@@ -261,12 +261,15 @@ def find_critical(R,Z,psi, discard_xpoints=True, old=False):
         opoint , xpoint = find_critical_old(R,Z,psi, discard_xpoints)
     else:
         opoint , xpoint = fastcrit(R,Z,psi, discard_xpoints)
-        xpoint_ = np.array(xpoint)
-        opoint_ = np.array(opoint)
-        closer_xpoint = np.argmin(np.linalg.norm((xpoint_-opoint_[:1])[:,:2], axis=-1))
-        if closer_xpoint != 0:
-            xpoint = discard_xpoints_f(R, Z, psi, opoint, xpoint)
-            print(xpoint)
+        if xpoint:
+            xpoint_ = np.array(xpoint)
+            opoint_ = np.array(opoint)
+            closer_xpoint = np.argmin(np.linalg.norm((xpoint_-opoint_[:1])[:,:2], axis=-1))
+            psi_dist = np.abs((xpoint_[closer_xpoint, -1] - xpoint_[0,-1])/(opoint_[0,-1] - xpoint_[0,-1]))
+            if closer_xpoint != 0 and psi_dist<.5:
+                xpoint = xpoint[:2]+xpoint[closer_xpoint:closer_xpoint+1]
+                xpoint = discard_xpoints_f(R, Z, psi, opoint, xpoint)
+                print(xpoint)
     return opoint, xpoint
 
 # # this is 10x faster if the numba import works; otherwise, @njit is the identity and fastcrit is 3x faster anyways
@@ -427,7 +430,7 @@ def discard_xpoints_f(R, Z, psi, opoint ,xpoint):
 
 
 
-def core_mask_old(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
+def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
     """
     Mark the parts of the domain which are in the core
 
@@ -515,12 +518,12 @@ def core_mask_old(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
 
     return mask
 
-def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None,old=False):
-    if old: return core_mask_old(R, Z, psi, opoint, xpoint, psi_bndry)
-    else: return inside_mask(R, Z, psi, opoint, xpoint, psi_bndry)
+# def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None, old=False):
+#     if old: return core_mask_old(R, Z, psi, opoint, xpoint, psi_bndry)
+#     else: return inside_mask(R, Z, psi, opoint, xpoint, psi_bndry)
 
 @njit(fastmath=True, cache=True)
-def inside_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
+def inside_mask(R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bndry=None):
     """
     Similar to core_mask_old above, except:
     (1) it's all stuff that can be JIT-compiled
@@ -528,7 +531,10 @@ def inside_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
     (3) the stack does not necessarily explore in only one direction, and it should be neat around the X-points
     """
     #
-    mask = zeros(psi.shape)
+    if mask_outside_limiter is not None:
+        mask = mask_outside_limiter.copy()
+    else:
+        mask = zeros(psi.shape)
     nx, ny = psi.shape
     #
     # Start and end points
@@ -580,6 +586,10 @@ def inside_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
          jlo , jhi = min(max(jx-1,0),ny-1) , max(0,min(jx+1,ny-1))
          mask[ilo:ihi+1,jlo:jhi+1] = 1*(mask[ilo:ihi+1,jlo:jhi+1]==1)*(psin[ilo:ihi+1,jlo:jhi+1]<1.0)
     #
+
+    # remove effect of mask_outside_limiter
+    mask = (mask==1)
+
     return mask
 
 def find_psisurface(eq, psifunc, r0, z0, r1, z1, psival=1.0, n=100, axis=None):
