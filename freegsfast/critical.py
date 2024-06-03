@@ -262,12 +262,15 @@ def find_critical(R,Z,psi, discard_xpoints=True, old=False):
         opoint , xpoint = find_critical_old(R,Z,psi, discard_xpoints)
     else:
         opoint , xpoint = fastcrit(R,Z,psi, discard_xpoints)
-        xpoint_ = np.array(xpoint)
-        opoint_ = np.array(opoint)
-        closer_xpoint = np.argmin(np.linalg.norm((xpoint_-opoint_[:1])[:,:2], axis=-1))
-        if closer_xpoint != 0:
-            xpoint = discard_xpoints_f(R, Z, psi, opoint, xpoint)
-            print(xpoint)
+        if xpoint:
+            xpoint_ = np.array(xpoint)
+            opoint_ = np.array(opoint)
+            closer_xpoint = np.argmin(np.linalg.norm((xpoint_-opoint_[:1])[:,:2], axis=-1))
+            psi_dist = np.abs((xpoint_[closer_xpoint, -1] - xpoint_[0,-1])/(opoint_[0,-1] - xpoint_[0,-1]))
+            if closer_xpoint != 0 and psi_dist<.5:
+                xpoint = xpoint[:2]+xpoint[closer_xpoint:closer_xpoint+1]
+                xpoint = discard_xpoints_f(R, Z, psi, opoint, xpoint)
+                print(xpoint)
     return opoint, xpoint
 
 # # this is 10x faster if the numba import works; otherwise, @njit is the identity and fastcrit is 3x faster anyways
@@ -459,45 +462,6 @@ def discard_xpoints_f(R, Z, psi, opoint ,xpoint):
         xpt_keep.append(xpt)
     xpoint = xpt_keep
     return xpoint
-
-
-
-
-    Ro, Zo, Po = opoint  # The primary O-point
-    result = False
-   
-    # for xpt in xpoint:
-    Rx, Zx, Px = xpt
-
-    num = int(max((np.abs(Rx-Ro))/dR, (np.abs(Zx-Zo))/dZ) + 1)
-    # print('num ', num)
-
-    # print('num')
-    rline = linspace(Ro, Rx, num)#(np.abs(Rx-Ro)//dR + 1))
-    zline = linspace(Zo, Zx, num)#(np.abs(Zx-Zo)//dZ + 1))
-
-    pline = bilinear_interpolation.biliint(R, Z, psi, np.array([rline, zline]))#, grid=False)
-
-    if Px < Po:
-        pline *= -1.0  # Reverse, so pline is maximum at X-point
-
-    # Now check that pline is monotonic
-    # Tried finding maximum (argmax) and testing
-    # how far that is from the X-point. This can go
-    # wrong because psi can be quite flat near the X-point
-    # Instead here look for the difference in psi
-    # rather than the distance in space
-
-    maxp = amax(pline)
-    if (maxp - pline[-1]) / (maxp - pline[0]) < 0.001:
-        # Less than 0.1% drop in psi from maximum to X-point
-
-        ind = argmin(pline)  # Should be at O-point
-        if (rline[ind] - Ro) ** 2 + (zline[ind] - Zo) ** 2 < 1e-4:
-            # Accept
-            result = True
-
-    return result
 
 
 
