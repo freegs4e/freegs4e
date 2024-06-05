@@ -83,8 +83,6 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
 
     import matplotlib.pyplot as plt
 
-    R = eq.R
-    Z = eq.Z
     psi = eq.psi()
 
     if axis is None:
@@ -93,7 +91,7 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
 
     levels = linspace(amin(psi), amax(psi), 50)
 
-    axis.contour(R, Z, psi, levels=levels)
+    axis.contour(eq.R, eq.Z, psi, levels=levels)
     axis.set_aspect("equal")
     axis.set_xlabel("Major radius [m]")
     axis.set_ylabel("Height [m]")
@@ -115,8 +113,8 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
             if xpt is not []:
                 psi_bndry = xpt[0][2]
                 if eq._profiles.flag_limiter:
+                    # axis.contour(eq.R, eq.Z, psi, levels=[eq._profiles.psi_bndry], colors="k")
                     axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r", linestyles = 'dashed')
-                    # axis.contour(eq.R, eq.Z, psi*eq._profiles.diverted_core_mask, levels=[eq._profiles.psi_bndry], colors="k")
                     cs = plt.contour(eq.R, eq.Z, psi, levels=[eq._profiles.psi_bndry], alpha=0)
                     paths = cs.collections[0].get_paths()
                     for path in paths:
