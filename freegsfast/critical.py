@@ -258,9 +258,9 @@ def remove_dup(points):
 
 def find_critical(R,Z,psi, discard_xpoints=True, old=False):
     if old:
-        opoint , xpoint = find_critical_old(R,Z,psi, discard_xpoints)
+        opoint, xpoint = find_critical_old(R,Z,psi, discard_xpoints)
     else:
-        opoint , xpoint = fastcrit(R,Z,psi, discard_xpoints)
+        opoint, xpoint = fastcrit(R,Z,psi, discard_xpoints)
         if xpoint:
             xpoint_ = np.array(xpoint)
             opoint_ = np.array(opoint)
@@ -320,74 +320,81 @@ def scan_for_crit(R, Z, psi):
                 if (np.abs(delta_R)<=dR and np.abs(delta_Z)<=dZ):
                     est_psi = psi[i,j]+0.5*(fR*delta_R + fZ*delta_Z) #+ 0.5*(fRR*delta_R**2 + fZZ*delta_Z**2 + fRZ*delta_R*delta_Z)
                     crpoint = (R0+delta_R , Z0+delta_Z , est_psi)
-                    if det>0.0 : opoint = [ crpoint ]+opoint
-                    else: xpoint = [ crpoint ]+xpoint
-    return opoint , xpoint
+                    if det>0.0 : opoint = [crpoint] + opoint
+                    else: xpoint = [crpoint] + xpoint
+    return opoint, xpoint
 
 
 def fastcrit(R, Z, psi, discard_xpoints=False):
     opoint , xpoint = scan_for_crit(R, Z, psi)
-                #
+
+    xpoint = np.array(xpoint)
+    opoint = np.array(opoint)
     # do NOT remove the "pop" command below, the lists were initialised with (-999.,-999.) so that numba could compile
     # xpoint.pop()
     # opoint.pop()
-    xpoint = xpoint[:-1]
-    opoint = opoint[:-1]
+    xpoint = xpoint[xpoint[:,0]>-990]
+    opoint = opoint[opoint[:,0]>-990]
     #xpoint = remove_dup(xpoint)
     #opoint = remove_dup(opoint)
     #
-    
-    if len(opoint) == 0:
+    len_opoint = len(opoint)
+    if len_opoint == 0:
         # Can't order primary O-point, X-point so return
         warn("Warning: No O points found")
         return opoint, xpoint
-
-    # Find primary O-point by sorting by distance from middle of domain
-    Rmid = 0.5 * (R[-1, 0] + R[0, 0])
-    Zmid = 0.5 * (Z[0, -1] + Z[0, 0])
-    opoint.sort(key=lambda x: (x[0] - Rmid) ** 2 + (x[1] - Zmid) ** 2)
+    elif len_opoint > 1:
+        # Find primary O-point by sorting by distance from middle of domain
+        Rmid = 0.5 * (R[-1, 0] + R[0, 0])
+        Zmid = 0.5 * (Z[0, -1] + Z[0, 0])
+        opoint_ordering = np.argsort((opoint[:,0]-Rmid)**2 + (opoint[:,1]-Zmid)**2)
+        opoint = opoint[opoint_ordering]
+    psi_axis = opoint[0][2]
+    # opoint.sort(key=lambda x: (x[0] - Rmid) ** 2 + (x[1] - Zmid) ** 2)
 
     # Draw a line from the O-point to each X-point. Psi should be
     # monotonic; discard those which are not
 
-    if discard_xpoints:
-        f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
-        Ro, Zo, Po = opoint[0]  # The primary O-point
-        xpt_keep = []
-        for xpt in xpoint:
-            Rx, Zx, Px = xpt
+    # if discard_xpoints:
+    #     f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
+    #     Ro, Zo, Po = opoint[0]  # The primary O-point
+    #     xpt_keep = []
+    #     for xpt in xpoint:
+    #         Rx, Zx, Px = xpt
 
-            rline = linspace(Ro, Rx, num=50)
-            zline = linspace(Zo, Zx, num=50)
+    #         rline = linspace(Ro, Rx, num=50)
+    #         zline = linspace(Zo, Zx, num=50)
 
-            pline = f(rline, zline, grid=False)
+    #         pline = f(rline, zline, grid=False)
 
-            if Px < Po:
-                pline *= -1.0  # Reverse, so pline is maximum at X-point
+    #         if Px < Po:
+    #             pline *= -1.0  # Reverse, so pline is maximum at X-point
 
-            # Now check that pline is monotonic
-            # Tried finding maximum (argmax) and testing
-            # how far that is from the X-point. This can go
-            # wrong because psi can be quite flat near the X-point
-            # Instead here look for the difference in psi
-            # rather than the distance in space
+    #         # Now check that pline is monotonic
+    #         # Tried finding maximum (argmax) and testing
+    #         # how far that is from the X-point. This can go
+    #         # wrong because psi can be quite flat near the X-point
+    #         # Instead here look for the difference in psi
+    #         # rather than the distance in space
 
-            maxp = amax(pline)
-            if (maxp - pline[-1]) / (maxp - pline[0]) > 0.001:
-                # More than 0.1% drop in psi from maximum to X-point
-                # -> Discard
-                continue
+    #         maxp = amax(pline)
+    #         if (maxp - pline[-1]) / (maxp - pline[0]) > 0.001:
+    #             # More than 0.1% drop in psi from maximum to X-point
+    #             # -> Discard
+    #             continue
 
-            ind = argmin(pline)  # Should be at O-point
-            if (rline[ind] - Ro) ** 2 + (zline[ind] - Zo) ** 2 > 1e-4:
-                # Too far, discard
-                continue
-            xpt_keep.append(xpt)
-        xpoint = xpt_keep
+    #         ind = argmin(pline)  # Should be at O-point
+    #         if (rline[ind] - Ro) ** 2 + (zline[ind] - Zo) ** 2 > 1e-4:
+    #             # Too far, discard
+    #             continue
+    #         xpt_keep.append(xpt)
+    #     xpoint = xpt_keep
 
     # Sort X-points by distance to primary O-point in psi space
-    psi_axis = opoint[0][2]
-    xpoint.sort(key=lambda x: (x[2] - psi_axis) ** 2)
+    if len(xpoint)>1:
+        xpoint_ordering = np.argsort((xpoint[:,2]-psi_axis)**2)
+        xpoint = xpoint[xpoint_ordering]
+    # xpoint.sort(key=lambda x: (x[2] - psi_axis) ** 2)
     #
     return opoint, xpoint
 
