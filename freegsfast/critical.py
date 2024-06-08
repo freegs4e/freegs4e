@@ -256,7 +256,7 @@ def remove_dup(points):
 			result.append(p)  # Add to the list
 	return result
 
-def find_critical(R, Z, psi, mask_inside_limiter, signIp=1, discard_xpoints=True):
+def find_critical(R, Z, psi, mask_inside_limiter=None, signIp=1, discard_xpoints=True):
     # if old:
     #     opoint, xpoint = find_critical_old(R,Z,psi, discard_xpoints)
     # else:
@@ -276,7 +276,7 @@ def find_critical(R, Z, psi, mask_inside_limiter, signIp=1, discard_xpoints=True
                 if result is False:
                     xpoint = xpoint[1:]
                     result = len(xpoint)<1
-            print(xpoint)
+            # print(xpoint)
     return opoint, xpoint
 
 # # this is 10x faster if the numba import works; otherwise, @njit is the identity and fastcrit is 3x faster anyways
@@ -348,7 +348,7 @@ def fastcrit(R, Z, psi, mask_inside_limiter):
         # Can't order primary O-point, X-point so return
         raise ValueError('No opoints found!')
         # return opoint, xpoint
-    else:
+    elif mask_inside_limiter is not None:
         # remove any opoint outside the limiter
         posR = np.argmin((R[:,:1].T - opoint[:,:1])**2, axis=1)
         posZ = np.argmin((Z[:1,:] - opoint[:,1:2])**2, axis=1)   
@@ -455,7 +455,7 @@ def discard_xpoints_f(opoint, xpt, f):
         if (rline[ind] - Ro) ** 2 + (zline[ind] - Zo) ** 2 < 1e-4:
             # Accept
             result = True
-            
+
     return result
 
 

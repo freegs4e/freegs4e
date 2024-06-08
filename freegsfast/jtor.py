@@ -175,36 +175,7 @@ class Profile(object):
             diverted_core_mask = None
         return  opt, xpt, diverted_core_mask, psi_bndry
     
-    # def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
-    #     """
-    #     Calculates the actual plasma current distribution.
-    #     This is just a signpost, as each different Profile parametrization will have its own method.
-        
-    #     Parameters
-    #     ----------
-    #     R : np.ndarray
-    #         R coordinates of the grid points
-    #     Z : np.ndarray
-    #         Z coordinates of the grid points
-    #     psi : np.ndarray
-    #         Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
-    #     psi_axis : float
-    #         Value of the poloidal field flux at the opoint
-    #     psi_bndry : float
-    #         Value of the poloidal field flux at the boundary of the plasma (last closed flux surface)
-    #     mask :
-    #         core_mask, mask of jtor>0
 
-    #     Returns
-    #     -------
-    #     Jtor : np.ndarray
-    #         Toroidal current density
-
-    #     """
-    #     return None
-    
-    
-    
 
 
 class ConstrainBetapIp(Profile):
@@ -242,169 +213,169 @@ class ConstrainBetapIp(Profile):
         # parameter to indicate that this is coming from FreeGSFast
         self.fast = True
 
-    def Jtor(self, R, Z, psi, psi_bndry=None):
-        """Calculate toroidal plasma current
+    # def Jtor(self, R, Z, psi, psi_bndry=None):
+    #     """Calculate toroidal plasma current
 
-        Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
+    #     Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
 
-        where jtorshape is a shape function
-        L and Beta0 are parameters which are set by constraints
-        This function has been adapted from FreeGS to be more computationally efficient by calculating the integrals analytically and to save the xpt, opt and Jtor so they don't have to be recomputed
+    #     where jtorshape is a shape function
+    #     L and Beta0 are parameters which are set by constraints
+    #     This function has been adapted from FreeGS to be more computationally efficient by calculating the integrals analytically and to save the xpt, opt and Jtor so they don't have to be recomputed
 
-        Parameters
-        ----------
-        R : np.ndarray
-            R coordinates of the grid points
-        Z : np.ndarray
-            Z coordinates of the grid points
-        psi : np.ndarray
-            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
-        psi_bndry : float, optional
-            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+    #     Parameters
+    #     ----------
+    #     R : np.ndarray
+    #         R coordinates of the grid points
+    #     Z : np.ndarray
+    #         Z coordinates of the grid points
+    #     psi : np.ndarray
+    #         Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+    #     psi_bndry : float, optional
+    #         Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
 
-        Returns
-        -------
-        Jtor : np.ndarray
-            Toroidal current density
+    #     Returns
+    #     -------
+    #     Jtor : np.ndarray
+    #         Toroidal current density
 
-        Raises
-        ------
-        ValueError
-            Raises ValueError if it cannot find an O-point
-        """
+    #     Raises
+    #     ------
+    #     ValueError
+    #         Raises ValueError if it cannot find an O-point
+    #     """
 
-        # Analyse the equilibrium, finding O- and X-points
-        opt, xpt = critical.find_critical(R, Z, psi)
-        if not opt:
-            raise ValueError("No O-points found!")
-        psi_axis = opt[0][2]
+    #     # Analyse the equilibrium, finding O- and X-points
+    #     opt, xpt = critical.find_critical(R, Z, psi)
+    #     if not opt:
+    #         raise ValueError("No O-points found!")
+    #     psi_axis = opt[0][2]
 
-        if psi_bndry is not None:
-            mask = critical.inside_mask(R, Z, psi, opt, xpt, mask_outside_limiter, psi_bndry=psi_bndry)
-        elif xpt:
-            psi_bndry = xpt[0][2]
-            mask = critical.core_mask(R, Z, psi, opt, xpt)
-        else:
-            # No X-points
-            psi_bndry = psi[0, 0]
-            mask = None
+    #     if psi_bndry is not None:
+    #         mask = critical.inside_mask(R, Z, psi, opt, xpt, mask_outside_limiter, psi_bndry=psi_bndry)
+    #     elif xpt:
+    #         psi_bndry = xpt[0][2]
+    #         mask = critical.core_mask(R, Z, psi, opt, xpt)
+    #     else:
+    #         # No X-points
+    #         psi_bndry = psi[0, 0]
+    #         mask = None
 
 
-        dR = R[1, 0] - R[0, 0]
-        dZ = Z[0, 1] - Z[0, 0]
+    #     dR = R[1, 0] - R[0, 0]
+    #     dZ = Z[0, 1] - Z[0, 0]
 
-        # Calculate normalised psi.
-        # 0 = magnetic axis
-        # 1 = plasma boundary
-        psi_norm = (psi - psi_axis) / (psi_bndry - psi_axis)
+    #     # Calculate normalised psi.
+    #     # 0 = magnetic axis
+    #     # 1 = plasma boundary
+    #     psi_norm = (psi - psi_axis) / (psi_bndry - psi_axis)
 
-        # Current profile shape
-        jtorshape = (1.0 - np.clip(psi_norm, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n
+    #     # Current profile shape
+    #     jtorshape = (1.0 - np.clip(psi_norm, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n
 
-        if mask is not None:
-            # If there is a masking function (X-points, limiters)
-            jtorshape *= mask
+    #     if mask is not None:
+    #         # If there is a masking function (X-points, limiters)
+    #         jtorshape *= mask
 
-        # Now apply constraints to define constants
+    #     # Now apply constraints to define constants
 
-        # Need integral of jtorshape to calculate pressure
-        # Note factor to convert from normalised psi integral
-        # def pshape(psinorm):
-        #     shapeintegral, _ = quad(
-        #         lambda x: (1.0 - x ** self.alpha_m) ** self.alpha_n, psinorm, 1.0
-        #     )
-        #     shapeintegral *= psi_bndry - psi_axis
-        #     return shapeintegral
+    #     # Need integral of jtorshape to calculate pressure
+    #     # Note factor to convert from normalised psi integral
+    #     # def pshape(psinorm):
+    #     #     shapeintegral, _ = quad(
+    #     #         lambda x: (1.0 - x ** self.alpha_m) ** self.alpha_n, psinorm, 1.0
+    #     #     )
+    #     #     shapeintegral *= psi_bndry - psi_axis
+    #     #     return shapeintegral
 
-        # Pressure is
-        #
-        # p(psinorm) = - (L*Beta0/Raxis) * pshape(psinorm)
-        #
+    #     # Pressure is
+    #     #
+    #     # p(psinorm) = - (L*Beta0/Raxis) * pshape(psinorm)
+    #     #
 
-        shapeintegral0 = spbeta(1./self.alpha_m , 1.0+self.alpha_n)/self.alpha_m
+    #     shapeintegral0 = spbeta(1./self.alpha_m , 1.0+self.alpha_n)/self.alpha_m
 
-        nx, ny = psi_norm.shape
-        pfunc = zeros((nx, ny))
-        # for i in range(1, nx - 1):
-        #     for j in range(1, ny - 1):
-        #         if (psi_norm[i, j] >= 0.0) and (psi_norm[i, j] < 1.0):
-        #             pfunc[i, j] = pshape(psi_norm[i, j])
+    #     nx, ny = psi_norm.shape
+    #     pfunc = zeros((nx, ny))
+    #     # for i in range(1, nx - 1):
+    #     #     for j in range(1, ny - 1):
+    #     #         if (psi_norm[i, j] >= 0.0) and (psi_norm[i, j] < 1.0):
+    #     #             pfunc[i, j] = pshape(psi_norm[i, j])
         
-        pfunc=shapeintegral0*(psi_bndry - psi_axis)*(1.0-spbinc(1./self.alpha_m , 1.0+self.alpha_n, np.clip(psi_norm,0.0001,0.9999)**(1/self.alpha_m)))
+    #     pfunc=shapeintegral0*(psi_bndry - psi_axis)*(1.0-spbinc(1./self.alpha_m , 1.0+self.alpha_n, np.clip(psi_norm,0.0001,0.9999)**(1/self.alpha_m)))
 
-        if mask is not None:
-            pfunc *= mask
+    #     if mask is not None:
+    #         pfunc *= mask
 
-        # Integrate over plasma
-        # betap = (8pi/mu0) * int(p)dRdZ / Ip^2
-        #       = - (8pi/mu0) * (L*Beta0/Raxis) * intp / Ip^2
+    #     # Integrate over plasma
+    #     # betap = (8pi/mu0) * int(p)dRdZ / Ip^2
+    #     #       = - (8pi/mu0) * (L*Beta0/Raxis) * intp / Ip^2
 
-        intp = np.sum(pfunc)*dR*dZ  # romb(romb(pfunc)) * dR * dZ
+    #     intp = np.sum(pfunc)*dR*dZ  # romb(romb(pfunc)) * dR * dZ
 
-        LBeta0 = -self.betap * (mu0 / (8.0 * pi)) * self.Raxis * self.Ip ** 2 / intp
+        # LBeta0 = -self.betap * (mu0 / (8.0 * pi)) * self.Raxis * self.Ip ** 2 / intp
 
-        # Integrate current components
-        IR = np.sum(jtorshape * R /self.Raxis)*dR*dZ # romb(romb(jtorshape * R / self.Raxis)) * dR * dZ
-        I_R = np.sum(jtorshape * self.Raxis / R)*dR*dZ # romb(romb(jtorshape * self.Raxis / R)) * dR * dZ
+        # # Integrate current components
+        # IR = np.sum(jtorshape * R /self.Raxis)*dR*dZ # romb(romb(jtorshape * R / self.Raxis)) * dR * dZ
+        # I_R = np.sum(jtorshape * self.Raxis / R)*dR*dZ # romb(romb(jtorshape * self.Raxis / R)) * dR * dZ
 
-        # Toroidal plasma current Ip is
-        #
-        # Ip = L * (Beta0 * IR + (1-Beta0)*I_R)
-        #    = L*Beta0*(IR - I_R) + L*I_R
-        #
+        # # Toroidal plasma current Ip is
+        # #
+        # # Ip = L * (Beta0 * IR + (1-Beta0)*I_R)
+        # #    = L*Beta0*(IR - I_R) + L*I_R
+        # #
 
-        L = self.Ip / I_R - LBeta0 * (IR / I_R - 1)
-        Beta0 = LBeta0 / L
+        # L = self.Ip / I_R - LBeta0 * (IR / I_R - 1)
+        # Beta0 = LBeta0 / L
 
-        # print("Constraints: L = %e, Beta0 = %e" % (L, Beta0))
+        # # print("Constraints: L = %e, Beta0 = %e" % (L, Beta0))
 
-        # Toroidal current
-        Jtor = L * (Beta0 * R / self.Raxis + (1 - Beta0) * self.Raxis / R) * jtorshape
-        self.jtor = Jtor
+        # # Toroidal current
+        # Jtor = L * (Beta0 * R / self.Raxis + (1 - Beta0) * self.Raxis / R) * jtorshape
+        # self.jtor = Jtor
 
-        self.L = L
-        self.Beta0 = Beta0
-        self.psi_bndry = psi_bndry
-        self.psi_axis = psi_axis
+        # self.L = L
+        # self.Beta0 = Beta0
+        # self.psi_bndry = psi_bndry
+        # self.psi_axis = psi_axis
 
-        self.xpt = xpt
-        self.opt = opt
+        # self.xpt = xpt
+        # self.opt = opt
 
-        return Jtor
+        # return Jtor
     
 
-    def Jtor_part1(self, R, Z, psi, psi_bndry=None):
-        """
-        Similar code as original Jtor method, limited to identifying critical points.
+    # def Jtor_part1(self, R, Z, psi, psi_bndry=None):
+    #     """
+    #     Similar code as original Jtor method, limited to identifying critical points.
 
-        Parameters
-        ----------
-        R : np.ndarray
-            R coordinates of the grid points
-        Z : np.ndarray
-            Z coordinates of the grid points
-        psi : np.ndarray
-            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
-        psi_bndry : float, optional
-            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+    #     Parameters
+    #     ----------
+    #     R : np.ndarray
+    #         R coordinates of the grid points
+    #     Z : np.ndarray
+    #         Z coordinates of the grid points
+    #     psi : np.ndarray
+    #         Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+    #     psi_bndry : float, optional
+    #         Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
 
-        Returns
-        -------
-        Jtor : np.ndarray
-            Toroidal current density
+    #     Returns
+    #     -------
+    #     Jtor : np.ndarray
+    #         Toroidal current density
 
-        Raises
-        ------
-        ValueError
-            Raises ValueError if it cannot find an O-point
-        """
+    #     Raises
+    #     ------
+    #     ValueError
+    #         Raises ValueError if it cannot find an O-point
+    #     """
 
-        # Analyse the equilibrium, finding O- and X-points
-        opt, xpt = critical.find_critical(R, Z, psi)
-        if not opt:
-            raise ValueError("No O-points found!")
+    #     # Analyse the equilibrium, finding O- and X-points
+    #     opt, xpt = critical.find_critical(R, Z, psi)
+    #     if not opt:
+    #         raise ValueError("No O-points found!")
 
-        return  opt, xpt
+    #     return  opt, xpt
     
         
     def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
@@ -579,183 +550,183 @@ class ConstrainPaxisIp(Profile):
         # parameter to indicate that this is coming from FreeGSFast
         self.fast = True
         
-    def Jtor(self, R, Z, psi, psi_bndry=None):
-        """Calculate toroidal plasma current
+    # def Jtor(self, R, Z, psi, psi_bndry=None):
+    #     """Calculate toroidal plasma current
 
-        Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
+    #     Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
 
-        where jtorshape is a shape function
-        L and Beta0 are parameters which are set by constraints
+    #     where jtorshape is a shape function
+    #     L and Beta0 are parameters which are set by constraints
 
-        This function is adapted from FreeGS to save the xpts, opts, and Jtor so they don't have to be recomputed
+    #     This function is adapted from FreeGS to save the xpts, opts, and Jtor so they don't have to be recomputed
 
-        Parameters
-        ----------
-        R : np.ndarray
-            R coordinates of the grid points
-        Z : np.ndarray
-            Z coordinates of the grid points
-        psi : np.ndarray
-            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
-        psi_bndry : float, optional
-            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+    #     Parameters
+    #     ----------
+    #     R : np.ndarray
+    #         R coordinates of the grid points
+    #     Z : np.ndarray
+    #         Z coordinates of the grid points
+    #     psi : np.ndarray
+    #         Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+    #     psi_bndry : float, optional
+    #         Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
 
-        Returns
-        -------
-        Jtor : np.ndarray
-            Toroidal current density
+    #     Returns
+    #     -------
+    #     Jtor : np.ndarray
+    #         Toroidal current density
 
-        Raises
-        ------
-        ValueError
-            Raises ValueError if it cannot find an O-point
-        """
+    #     Raises
+    #     ------
+    #     ValueError
+    #         Raises ValueError if it cannot find an O-point
+    #     """
 
-        # Analyse the equilibrium, finding O- and X-points
-        opt, xpt = critical.find_critical(R, Z, psi)
-        if not opt:
-            raise ValueError("No O-points found!")
-        psi_axis = opt[0][2]
+    #     # Analyse the equilibrium, finding O- and X-points
+    #     opt, xpt = critical.find_critical(R, Z, psi)
+    #     if not opt:
+    #         raise ValueError("No O-points found!")
+    #     psi_axis = opt[0][2]
 
-        if psi_bndry is not None:
-            mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
-        elif xpt:
-            psi_bndry = xpt[0][2]
-            mask = critical.core_mask(R, Z, psi, opt, xpt)
-        else:
-            # No X-points
-            psi_bndry = psi[0, 0]
-            mask = None
+    #     if psi_bndry is not None:
+    #         mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+    #     elif xpt:
+    #         psi_bndry = xpt[0][2]
+    #         mask = critical.core_mask(R, Z, psi, opt, xpt)
+    #     else:
+    #         # No X-points
+    #         psi_bndry = psi[0, 0]
+    #         mask = None
 
-        dR = R[1, 0] - R[0, 0]
-        dZ = Z[0, 1] - Z[0, 0]
+    #     dR = R[1, 0] - R[0, 0]
+    #     dZ = Z[0, 1] - Z[0, 0]
 
-        # Calculate normalised psi.
-        # 0 = magnetic axis
-        # 1 = plasma boundary
-        psi_norm = (psi - psi_axis) / (psi_bndry - psi_axis)
+    #     # Calculate normalised psi.
+    #     # 0 = magnetic axis
+    #     # 1 = plasma boundary
+    #     psi_norm = (psi - psi_axis) / (psi_bndry - psi_axis)
 
-        # Current profile shape
-        jtorshape = (1.0 - np.clip(psi_norm, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n
+    #     # Current profile shape
+    #     jtorshape = (1.0 - np.clip(psi_norm, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n
 
-        if mask is not None:
-            # If there is a masking function (X-points, limiters)
-            jtorshape *= mask
+    #     if mask is not None:
+    #         # If there is a masking function (X-points, limiters)
+    #         jtorshape *= mask
 
-        # Now apply constraints to define constants
+    #     # Now apply constraints to define constants
 
-        # Need integral of jtorshape to calculate paxis
-        # Note factor to convert from normalised psi integral
-        # shapeintegral, _ = quad(
-        #     lambda x: (1.0 - x ** self.alpha_m) ** self.alpha_n, 0.0, 1.0
-        # )
-        shapeintegral = spbeta(1./self.alpha_m , 1.0+self.alpha_n)/self.alpha_m
-        shapeintegral *= psi_bndry - psi_axis
+    #     # Need integral of jtorshape to calculate paxis
+    #     # Note factor to convert from normalised psi integral
+    #     # shapeintegral, _ = quad(
+    #     #     lambda x: (1.0 - x ** self.alpha_m) ** self.alpha_n, 0.0, 1.0
+    #     # )
+    #     shapeintegral = spbeta(1./self.alpha_m , 1.0+self.alpha_n)/self.alpha_m
+    #     shapeintegral *= psi_bndry - psi_axis
 
-        # Pressure on axis is
-        #
-        # paxis = - (L*Beta0/Raxis) * shapeintegral
-        #
+    #     # Pressure on axis is
+    #     #
+    #     # paxis = - (L*Beta0/Raxis) * shapeintegral
+    #     #
 
-        # Integrate current components
-        IR = np.sum(jtorshape * R /self.Raxis)*dR*dZ #romb(romb(jtorshape * R / self.Raxis)) * dR * dZ
-        I_R = np.sum(jtorshape * self.Raxis / R)*dR*dZ #romb(romb(jtorshape * self.Raxis / R)) * dR * dZ
+    #     # Integrate current components
+    #     IR = np.sum(jtorshape * R /self.Raxis)*dR*dZ #romb(romb(jtorshape * R / self.Raxis)) * dR * dZ
+    #     I_R = np.sum(jtorshape * self.Raxis / R)*dR*dZ #romb(romb(jtorshape * self.Raxis / R)) * dR * dZ
 
-        # Toroidal plasma current Ip is
-        #
-        # Ip = L * (Beta0 * IR + (1-Beta0)*I_R)
-        #    = L*Beta0*(IR - I_R) + L*I_R
-        #
+    #     # Toroidal plasma current Ip is
+    #     #
+    #     # Ip = L * (Beta0 * IR + (1-Beta0)*I_R)
+    #     #    = L*Beta0*(IR - I_R) + L*I_R
+    #     #
 
-        LBeta0 = -self.paxis * self.Raxis / shapeintegral
+    #     LBeta0 = -self.paxis * self.Raxis / shapeintegral
 
-        L = self.Ip / I_R - LBeta0 * (IR / I_R - 1)
-        Beta0 = LBeta0 / L
+    #     L = self.Ip / I_R - LBeta0 * (IR / I_R - 1)
+    #     Beta0 = LBeta0 / L
 
-        # print("Constraints: L = %e, Beta0 = %e" % (L, Beta0))
+    #     # print("Constraints: L = %e, Beta0 = %e" % (L, Beta0))
 
-        # Toroidal current
-        Jtor = L * (Beta0 * R / self.Raxis + (1 - Beta0) * self.Raxis / R) * jtorshape
-        self.jtor = Jtor
+    #     # Toroidal current
+    #     Jtor = L * (Beta0 * R / self.Raxis + (1 - Beta0) * self.Raxis / R) * jtorshape
+    #     self.jtor = Jtor
 
-        self.L = L
-        self.Beta0 = Beta0
-        self.psi_bndry = psi_bndry
-        self.psi_axis = psi_axis
+    #     self.L = L
+    #     self.Beta0 = Beta0
+    #     self.psi_bndry = psi_bndry
+    #     self.psi_axis = psi_axis
 
-        self.xpt = xpt
-        self.opt = opt
+    #     self.xpt = xpt
+    #     self.opt = opt
 
-        return Jtor
+    #     return Jtor
 
 
-    def Jtor_part1(self, R, Z, psi, psi_bndry=None):
-        """
-        Same code as original Jtor method, just split into two parts to enable 
-        identification of limiter plasma configurations.
+    # def Jtor_part1(self, R, Z, psi, psi_bndry=None):
+    #     """
+    #     Same code as original Jtor method, just split into two parts to enable 
+    #     identification of limiter plasma configurations.
         
-        Calculate toroidal plasma current
+    #     Calculate toroidal plasma current
 
-        Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
+    #     Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
 
-        where jtorshape is a shape function
-        L and Beta0 are parameters which are set by constraints
+    #     where jtorshape is a shape function
+    #     L and Beta0 are parameters which are set by constraints
 
-        This function is adapted from FreeGS to save the xpts, opts, and Jtor so they don't have to be recomputed
+    #     This function is adapted from FreeGS to save the xpts, opts, and Jtor so they don't have to be recomputed
 
-        Parameters
-        ----------
-        R : np.ndarray
-            R coordinates of the grid points
-        Z : np.ndarray
-            Z coordinates of the grid points
-        psi : np.ndarray
-            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
-        psi_bndry : float, optional
-            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+    #     Parameters
+    #     ----------
+    #     R : np.ndarray
+    #         R coordinates of the grid points
+    #     Z : np.ndarray
+    #         Z coordinates of the grid points
+    #     psi : np.ndarray
+    #         Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+    #     psi_bndry : float, optional
+    #         Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
 
-        Returns
-        -------
-        Jtor : np.ndarray
-            Toroidal current density
+    #     Returns
+    #     -------
+    #     Jtor : np.ndarray
+    #         Toroidal current density
 
-        Raises
-        ------
-        ValueError
-            Raises ValueError if it cannot find an O-point
-        """
+    #     Raises
+    #     ------
+    #     ValueError
+    #         Raises ValueError if it cannot find an O-point
+    #     """
 
-        # Analyse the equilibrium, finding O- and X-points
-        opt, xpt = critical.find_critical(R, Z, psi)
-        if not opt:
-            raise ValueError("No O-points found!")
-        # psi_axis = opt[0][2]
+    #     # Analyse the equilibrium, finding O- and X-points
+    #     opt, xpt = critical.find_critical(R, Z, psi)
+    #     if not opt:
+    #         raise ValueError("No O-points found!")
+    #     # psi_axis = opt[0][2]
 
-        # if psi_bndry is not None:
-        #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
-        # elif xpt:
-        #     psi_bndry = xpt[0][2]
-        #     mask = critical.core_mask(R, Z, psi, opt, xpt)
-        # else:
-        #     # No X-points
-        #     psi_bndry = psi[0, 0]
-        #     mask = None
+    #     # if psi_bndry is not None:
+    #     #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+    #     # elif xpt:
+    #     #     psi_bndry = xpt[0][2]
+    #     #     mask = critical.core_mask(R, Z, psi, opt, xpt)
+    #     # else:
+    #     #     # No X-points
+    #     #     psi_bndry = psi[0, 0]
+    #     #     mask = None
 
-        # # check correct sorting between psi_axis and psi_bndry
-        # if (psi_axis-psi_bndry)*self.Ip < 0:
-        #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+    #     # # check correct sorting between psi_axis and psi_bndry
+    #     # if (psi_axis-psi_bndry)*self.Ip < 0:
+    #     #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
 
 
-        # # added with respect to original Jtor
-        # self.xpt = xpt
-        # self.opt = opt
-        # self.psi_bndry = psi_bndry
-        # self.psi_axis = psi_axis
+    #     # # added with respect to original Jtor
+    #     # self.xpt = xpt
+    #     # self.opt = opt
+    #     # self.psi_bndry = psi_bndry
+    #     # self.psi_axis = psi_axis
 
-        return opt, xpt
+    #     return opt, xpt
 
         
-    def Jtor_part2(self, R, Z, psi, psi_bndry, mask):
+    def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
         """
         Same code as original Jtor method, just split into two parts to enable 
         identification of limiter plasma configurations.
@@ -801,7 +772,7 @@ class ConstrainPaxisIp(Profile):
         # Calculate normalised psi.
         # 0 = magnetic axis
         # 1 = plasma boundary
-        psi_norm = (psi - self.psi_axis) / (psi_bndry - self.psi_axis)
+        psi_norm = (psi - psi_axis) / (psi_bndry - psi_axis)
 
         # Current profile shape
         jtorshape = (1.0 - np.clip(psi_norm, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n
@@ -818,7 +789,7 @@ class ConstrainPaxisIp(Profile):
         #     lambda x: (1.0 - x ** self.alpha_m) ** self.alpha_n, 0.0, 1.0
         # )
         shapeintegral = spbeta(1./self.alpha_m , 1.0+self.alpha_n)/self.alpha_m
-        shapeintegral *= psi_bndry - self.psi_axis
+        shapeintegral *= psi_bndry - psi_axis
 
         # Pressure on axis is
         #
@@ -909,73 +880,73 @@ class Fiesta_Topeol(Profile):
         self.fast = True
 
 
-    def Jtor_part1(self, R, Z, psi, psi_bndry=None):
-        """
-        Same code as original Jtor method, just split into two parts to enable 
-        identification of limiter plasma configurations.
+    # def Jtor_part1(self, R, Z, psi, psi_bndry=None):
+    #     """
+    #     Same code as original Jtor method, just split into two parts to enable 
+    #     identification of limiter plasma configurations.
         
-        Calculate toroidal plasma current
+    #     Calculate toroidal plasma current
 
-        Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
+    #     Jtor = L * (Beta0*R/Raxis + (1-Beta0)*Raxis/R)*jtorshape
 
-        where jtorshape is a shape function
-        L and Beta0 are parameters which are set by constraints
+    #     where jtorshape is a shape function
+    #     L and Beta0 are parameters which are set by constraints
 
-        This function is adapted from FreeGS to save the xpts, opts, and Jtor so they don't have to be recomputed
+    #     This function is adapted from FreeGS to save the xpts, opts, and Jtor so they don't have to be recomputed
 
-        Parameters
-        ----------
-        R : np.ndarray
-            R coordinates of the grid points
-        Z : np.ndarray
-            Z coordinates of the grid points
-        psi : np.ndarray
-            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
-        psi_bndry : float, optional
-            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+    #     Parameters
+    #     ----------
+    #     R : np.ndarray
+    #         R coordinates of the grid points
+    #     Z : np.ndarray
+    #         Z coordinates of the grid points
+    #     psi : np.ndarray
+    #         Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+    #     psi_bndry : float, optional
+    #         Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
 
-        Returns
-        -------
-        Jtor : np.ndarray
-            Toroidal current density
+    #     Returns
+    #     -------
+    #     Jtor : np.ndarray
+    #         Toroidal current density
 
-        Raises
-        ------
-        ValueError
-            Raises ValueError if it cannot find an O-point
-        """
+    #     Raises
+    #     ------
+    #     ValueError
+    #         Raises ValueError if it cannot find an O-point
+    #     """
 
-        # Analyse the equilibrium, finding O- and X-points
-        opt, xpt = critical.find_critical(R, Z, psi)
-        if not opt:
-            raise ValueError("No O-points found!")
-        # psi_axis = opt[0][2]
+    #     # Analyse the equilibrium, finding O- and X-points
+    #     opt, xpt = critical.find_critical(R, Z, psi)
+    #     if not opt:
+    #         raise ValueError("No O-points found!")
+    #     # psi_axis = opt[0][2]
 
-        # if psi_bndry is not None:
-        #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
-        # elif xpt:
-        #     psi_bndry = xpt[0][2]
-        #     mask = critical.core_mask(R, Z, psi, opt, xpt)
-        # else:
-        #     # No X-points
-        #     psi_bndry = psi[0, 0]
-        #     mask = None
+    #     # if psi_bndry is not None:
+    #     #     mask = critical.core_mask(R, Z, psi, opt, xpt, psi_bndry)
+    #     # elif xpt:
+    #     #     psi_bndry = xpt[0][2]
+    #     #     mask = critical.core_mask(R, Z, psi, opt, xpt)
+    #     # else:
+    #     #     # No X-points
+    #     #     psi_bndry = psi[0, 0]
+    #     #     mask = None
 
-        # # check correct sorting between psi_axis and psi_bndry
-        # if (psi_axis-psi_bndry)*self.Ip < 0:
-        #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
+    #     # # check correct sorting between psi_axis and psi_bndry
+    #     # if (psi_axis-psi_bndry)*self.Ip < 0:
+    #     #     raise ValueError("Incorrect critical points! Likely due to not suitable psi_plasma")
 
 
-        # # added with respect to original Jtor
-        # self.xpt = xpt
-        # self.opt = opt
-        # self.psi_bndry = psi_bndry
-        # self.psi_axis = psi_axis
+    #     # # added with respect to original Jtor
+    #     # self.xpt = xpt
+    #     # self.opt = opt
+    #     # self.psi_bndry = psi_bndry
+    #     # self.psi_axis = psi_axis
 
-        return opt, xpt
+    #     return opt, xpt
 
         
-    def Jtor_part2(self, R, Z, psi, psi_bndry, mask):
+    def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
         """
         Same code as original Jtor method, just split into two parts to enable 
         identification of limiter plasma configurations.
@@ -1020,7 +991,7 @@ class Fiesta_Topeol(Profile):
         # Calculate normalised psi.
         # 0 = magnetic axis
         # 1 = plasma boundary
-        psi_norm = (psi - self.psi_axis) / (psi_bndry - self.psi_axis)
+        psi_norm = (psi - psi_axis) / (psi_bndry - psi_axis)
 
         # Current profile shape
         jtorshape = (1.0 - np.clip(psi_norm, 0.0, 1.0) ** self.alpha_m) ** self.alpha_n

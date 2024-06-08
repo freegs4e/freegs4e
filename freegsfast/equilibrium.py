@@ -442,24 +442,24 @@ class Equilibrium:
         # Analyse the equilibrium, finding O- and X-points
         psi = self.psi()
         opt, xpt = critical.find_critical(self.R, self.Z, psi)
-        if opt:
-            self.psi_axis = opt[0][2]
+        # if opt:
+        self.psi_axis = opt[0][2]
 
-            if xpt:
-                self.psi_bndry = xpt[0][2]
-                self.mask = critical.core_mask(self.R, self.Z, psi, opt, xpt)
+        if len(xpt)>0:
+            self.psi_bndry = xpt[0][2]
+            self.mask = critical.inside_mask(self.R, self.Z, psi, opt, xpt, self.mask_outside_limiter)
 
-                # Use interpolation to find if a point is in the core.
-                self.mask_func = interpolate.RectBivariateSpline(
-                    self.R[:, 0], self.Z[0, :], self.mask
-                )
-            elif self._applyBoundary is fixedBoundary:
-                # No X-points, but using fixed boundary
-                self.psi_bndry = psi[0, 0]  # Value of psi on the boundary
-                self.mask = None  # All points are in the core region
-            else:
-                self.psi_bndry = None
-                self.mask = None
+            # Use interpolation to find if a point is in the core.
+            self.mask_func = interpolate.RectBivariateSpline(
+                self.R[:, 0], self.Z[0, :], self.mask
+            )
+        elif self._applyBoundary is fixedBoundary:
+            # No X-points, but using fixed boundary
+            self.psi_bndry = psi[0, 0]  # Value of psi on the boundary
+            self.mask = None  # All points are in the core region
+        else:
+            self.psi_bndry = None
+            self.mask = None
 
     def plot(self, axis=None, show=True, oxpoints=True):
         """
