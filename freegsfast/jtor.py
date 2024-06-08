@@ -157,11 +157,12 @@ class Profile(object):
         """
 
         # Analyse the equilibrium, finding O- and X-points
-        opt, xpt = critical.find_critical(R, Z, psi)
+        opt, xpt = critical.find_critical(R, Z, psi, self.mask_inside_limiter, self.Ip)
+
         
         if psi_bndry is not None:
             diverted_core_mask = critical.inside_mask(R, Z, psi, opt, xpt, mask_outside_limiter, psi_bndry)
-        elif xpt:
+        elif len(xpt)>0:
             psi_bndry = xpt[0][2]
             self.psi_axis = opt[0][2]
             # # check correct sorting between psi_axis and psi_bndry
@@ -172,7 +173,7 @@ class Profile(object):
             # No X-points
             psi_bndry = psi[0, 0]
             diverted_core_mask = None
-        return  opt, xpt, diverted_core_mask
+        return  opt, xpt, diverted_core_mask, psi_bndry
     
     # def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
     #     """
@@ -204,7 +205,6 @@ class Profile(object):
     
     
     
-
 
 
 class ConstrainBetapIp(Profile):

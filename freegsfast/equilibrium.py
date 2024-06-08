@@ -128,7 +128,7 @@ class Equilibrium:
             """
         nx,ny = np.shape(self.R)
         xx, yy = meshgrid(linspace(0, 1, nx), linspace(0, 1, ny), indexing="ij")
-        psi = exp(-((xx - 0.3) ** 2 + (yy - 0.5) ** 2))
+        psi = exp(-((xx - 0.35) ** 2 + (yy - 0.5) ** 2))
 
         psi[0, :] = 0.0
         psi[:, 0] = 0.0

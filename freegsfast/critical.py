@@ -256,20 +256,27 @@ def remove_dup(points):
 			result.append(p)  # Add to the list
 	return result
 
-def find_critical(R,Z,psi, discard_xpoints=True, old=False):
-    if old:
-        opoint, xpoint = find_critical_old(R,Z,psi, discard_xpoints)
-    else:
-        opoint, xpoint = fastcrit(R,Z,psi, discard_xpoints)
-        if xpoint:
-            xpoint_ = np.array(xpoint)
-            opoint_ = np.array(opoint)
-            closer_xpoint = np.argmin(np.linalg.norm((xpoint_-opoint_[:1])[:,:2], axis=-1))
-            psi_dist = np.abs((xpoint_[closer_xpoint, -1] - xpoint_[0,-1])/(opoint_[0,-1] - xpoint_[0,-1]))
-            if closer_xpoint != 0 and psi_dist<.5:
-                xpoint = xpoint[:2]+xpoint[closer_xpoint:closer_xpoint+1]
-                xpoint = discard_xpoints_f(R, Z, psi, opoint, xpoint)
-                print(xpoint)
+def find_critical(R, Z, psi, mask_inside_limiter, signIp=1, discard_xpoints=True):
+    # if old:
+    #     opoint, xpoint = find_critical_old(R,Z,psi, discard_xpoints)
+    # else:
+    opoint, xpoint = fastcrit(R, Z, psi, mask_inside_limiter)
+
+    if len(xpoint)>0 and (signIp is not None):
+        # select xpoint with the correct ordering wrt Ip
+        xpoint = xpoint[((xpoint[:,2] - opoint[:1,2])*signIp) < 0]
+    if len(xpoint)>1:
+        # check distance to opoint and in case discard xpoints on non-monotonic LOS 
+        closer_xpoint = np.argmin(np.linalg.norm((xpoint-opoint[:1])[:,:2], axis=-1))
+        if closer_xpoint != 0: 
+            f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
+            result = False
+            while result is False:
+                result = discard_xpoints_f(opoint[0], xpoint[0], f)
+                if result is False:
+                    xpoint = xpoint[1:]
+                    result = len(xpoint)<1
+            print(xpoint)
     return opoint, xpoint
 
 # # this is 10x faster if the numba import works; otherwise, @njit is the identity and fastcrit is 3x faster anyways
@@ -322,11 +329,6 @@ def scan_for_crit(R, Z, psi):
                     crpoint = (R0+delta_R , Z0+delta_Z , est_psi)
                     if det>0.0 : opoint = [crpoint] + opoint
                     else: xpoint = [crpoint] + xpoint
-    return opoint, xpoint
-
-
-def fastcrit(R, Z, psi, discard_xpoints=False):
-    opoint , xpoint = scan_for_crit(R, Z, psi)
 
     xpoint = np.array(xpoint)
     opoint = np.array(opoint)
@@ -334,21 +336,45 @@ def fastcrit(R, Z, psi, discard_xpoints=False):
     # xpoint.pop()
     # opoint.pop()
     xpoint = xpoint[xpoint[:,0]>-990]
-    opoint = opoint[opoint[:,0]>-990]
-    #xpoint = remove_dup(xpoint)
-    #opoint = remove_dup(opoint)
-    #
+    opoint = opoint[opoint[:,0]>-990]    
+    return opoint, xpoint
+
+
+def fastcrit(R, Z, psi, mask_inside_limiter):
+    opoint , xpoint = scan_for_crit(R, Z, psi)
+
     len_opoint = len(opoint)
     if len_opoint == 0:
         # Can't order primary O-point, X-point so return
-        warn("Warning: No O points found")
-        return opoint, xpoint
+        raise ValueError('No opoints found!')
+        # return opoint, xpoint
+    else:
+        # remove any opoint outside the limiter
+        posR = np.argmin((R[:,:1].T - opoint[:,:1])**2, axis=1)
+        posZ = np.argmin((Z[:1,:] - opoint[:,1:2])**2, axis=1)   
+        opoint = opoint[mask_inside_limiter[posR,posZ]]
+
+    if len_opoint == 0:
+        # Can't order primary O-point, X-point so return
+        raise ValueError('No opoints found!')
     elif len_opoint > 1:
         # Find primary O-point by sorting by distance from middle of domain
         Rmid = 0.5 * (R[-1, 0] + R[0, 0])
         Zmid = 0.5 * (Z[0, -1] + Z[0, 0])
         opoint_ordering = np.argsort((opoint[:,0]-Rmid)**2 + (opoint[:,1]-Zmid)**2)
         opoint = opoint[opoint_ordering]
+    
+    # # check that primary opoint is inside the limiter
+    # result = False
+    # while result is False:
+    #     posR = np.argmin(np.abs(R[:,0] - opoint[:1,0]))
+    #     posZ = np.argmin(np.abs(Z[0,:] - opoint[:1,1]))
+    #     if mask_inside_limiter[posR, posZ] < 1:
+    #         opoint = opoint[1:]
+    #         if len(opoint) == 0:
+    #             raise ValueError('No valid opoints found!')
+    #     else:
+    #         result = True    
     psi_axis = opoint[0][2]
     # opoint.sort(key=lambda x: (x[0] - Rmid) ** 2 + (x[1] - Zmid) ** 2)
 
@@ -398,41 +424,39 @@ def fastcrit(R, Z, psi, discard_xpoints=False):
     #
     return opoint, xpoint
 
-def discard_xpoints_f(R, Z, psi, opoint ,xpoint):
-    f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
-    Ro, Zo, Po = opoint[0]  # The primary O-point
-    xpt_keep = []
-    for xpt in xpoint:
-        Rx, Zx, Px = xpt
+def discard_xpoints_f(opoint, xpt, f):
+    # Here opoint and xpt are individual critical points
+    Ro, Zo, Po = opoint  # The primary O-point
+    result = False
+   
+    # for xpt in xpoint:
+    Rx, Zx, Px = xpt
 
-        rline = linspace(Ro, Rx, num=50)
-        zline = linspace(Zo, Zx, num=50)
+    rline = linspace(Ro, Rx, num=50)
+    zline = linspace(Zo, Zx, num=50)
 
-        pline = f(rline, zline, grid=False)
+    pline = f(rline, zline, grid=False)
 
-        if Px < Po:
-            pline *= -1.0  # Reverse, so pline is maximum at X-point
+    if Px < Po:
+        pline *= -1.0  # Reverse, so pline is maximum at X-point
 
-        # Now check that pline is monotonic
-        # Tried finding maximum (argmax) and testing
-        # how far that is from the X-point. This can go
-        # wrong because psi can be quite flat near the X-point
-        # Instead here look for the difference in psi
-        # rather than the distance in space
+    # Now check that pline is monotonic
+    # Tried finding maximum (argmax) and testing
+    # how far that is from the X-point. This can go
+    # wrong because psi can be quite flat near the X-point
+    # Instead here look for the difference in psi
+    # rather than the distance in space
 
-        maxp = amax(pline)
-        if (maxp - pline[-1]) / (maxp - pline[0]) > 0.001:
-            # More than 0.1% drop in psi from maximum to X-point
-            # -> Discard
-            continue
+    maxp = amax(pline)
+    if (maxp - pline[-1]) / (maxp - pline[0]) < 0.001:
+        # Less than 0.1% drop in psi from maximum to X-point
 
         ind = argmin(pline)  # Should be at O-point
-        if (rline[ind] - Ro) ** 2 + (zline[ind] - Zo) ** 2 > 1e-4:
-            # Too far, discard
-            continue
-        xpt_keep.append(xpt)
-    xpoint = xpt_keep
-    return xpoint
+        if (rline[ind] - Ro) ** 2 + (zline[ind] - Zo) ** 2 < 1e-4:
+            # Accept
+            result = True
+            
+    return result
 
 
 
