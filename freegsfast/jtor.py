@@ -250,15 +250,15 @@ class ConstrainBetapIp(Profile):
     #         raise ValueError("No O-points found!")
     #     psi_axis = opt[0][2]
 
-        if psi_bndry is not None:
-            mask = critical.inside_mask(R, Z, psi, opt, xpt, mask_outside_limiter, psi_bndry=psi_bndry)
-        elif xpt:
-            psi_bndry = xpt[0][2]
-            mask = critical.core_mask(R, Z, psi, opt, xpt)
-        else:
-            # No X-points
-            psi_bndry = psi[0, 0]
-            mask = None
+    #     if psi_bndry is not None:
+    #         mask = critical.inside_mask(R, Z, psi, opt, xpt, mask_outside_limiter, psi_bndry=psi_bndry)
+    #     elif xpt:
+    #         psi_bndry = xpt[0][2]
+    #         mask = critical.core_mask(R, Z, psi, opt, xpt)
+    #     else:
+    #         # No X-points
+    #         psi_bndry = psi[0, 0]
+    #         mask = None
 
 
     #     dR = R[1, 0] - R[0, 0]
