@@ -41,17 +41,14 @@ from numpy import (
     sum,
 )
 import numpy as np
-import warnings
 
 try:
     from numba import njit
 except ImportError:
-    warnings.warn("Numba not found, using slower version")
     def njit(*args, **kwargs):
         return lambda f: f
 
 from warnings import warn
-from . import bilinear_interpolation 
 
 
 def find_critical_old(R, Z, psi, discard_xpoints=True):
@@ -266,18 +263,18 @@ def find_critical(R, Z, psi, mask_inside_limiter=None, signIp=1, discard_xpoints
     if len(xpoint)>0 and (signIp is not None):
         # select xpoint with the correct ordering wrt Ip
         xpoint = xpoint[((xpoint[:,2] - opoint[:1,2])*signIp) < 0]
-    if len(xpoint)>0:
+    if len(xpoint)>1:
         # check distance to opoint and in case discard xpoints on non-monotonic LOS 
-        # closer_xpoint = np.argmin(np.linalg.norm((xpoint-opoint[:1])[:,:2], axis=-1))
-        # if closer_xpoint != 0: 
-            # f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
-        result = False
-        while result is False:
-            result = discard_xpoints_f(R, Z, psi, opoint[0], xpoint[0])
-            if result is False:
-                xpoint = xpoint[1:]
-                result = len(xpoint)<1
-            # print(xpoint)
+        closer_xpoint = np.argmin(np.linalg.norm((xpoint-opoint[:1])[:,:2], axis=-1))
+        if closer_xpoint != 0: 
+            f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
+            result = False
+            while result is False:
+                result = discard_xpoints_f(opoint[0], xpoint[0], f)
+                if result is False:
+                    xpoint = xpoint[1:]
+                    result = len(xpoint)<1
+            print(xpoint)
     return opoint, xpoint
 
 # # this is 10x faster if the numba import works; otherwise, @njit is the identity and fastcrit is 3x faster anyways
@@ -425,25 +422,18 @@ def fastcrit(R, Z, psi, mask_inside_limiter):
     #
     return opoint, xpoint
 
-def discard_xpoints_f(R, Z, psi, opoint, xpt):
+def discard_xpoints_f(opoint, xpt, f):
     # Here opoint and xpt are individual critical points
-    dR = R[1, 0] - R[0, 0]
-    dZ = Z[0, 1] - Z[0, 0]
-
     Ro, Zo, Po = opoint  # The primary O-point
     result = False
    
     # for xpt in xpoint:
     Rx, Zx, Px = xpt
 
-    num = int(max((np.abs(Rx-Ro))/dR, (np.abs(Zx-Zo))/dZ) + 1)
-    # print('num ', num)
+    rline = linspace(Ro, Rx, num=50)
+    zline = linspace(Zo, Zx, num=50)
 
-    # print('num')
-    rline = linspace(Ro, Rx, num)#(np.abs(Rx-Ro)//dR + 1))
-    zline = linspace(Zo, Zx, num)#(np.abs(Zx-Zo)//dZ + 1))
-
-    pline = bilinear_interpolation.biliint(R, Z, psi, np.array([rline, zline]))#, grid=False)
+    pline = f(rline, zline, grid=False)
 
     if Px < Po:
         pline *= -1.0  # Reverse, so pline is maximum at X-point
