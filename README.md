@@ -1,9 +1,9 @@
-FreeGS: Free boundary Grad-Shafranov solver
+FreeGS4E: Free boundary Grad-Shafranov solver for time evolution
 ===========================================
 
-FreeGSFast is a package based on [FreeGS](https://github.com/freegs-plasma/freegs), which calculates plasma equilibria for tokamak fusion experiments by solving the free boundary Grad-Shafranov equation. FreeGSFast is forked from FreeGS 0.6.1 and includes some performance optimisations that may also limit the use cases.
+FreeGS4E is a package based on [FreeGS](https://github.com/freegs-plasma/freegs), which calculates plasma equilibria for tokamak fusion experiments by solving the free boundary Grad-Shafranov equation. FreeGS4E is forked from FreeGS 0.6.1 and includes some performance optimisations that may also limit the use cases.
 
-The primary use case for FreeGSFast is to provide a fast equilibrium solver for the [FreeGSNKE](https://gitlab.stfc.ac.uk/farscape-ws3/freegsnke) code. This has resulted in some changes to the FreeGS codebase that mean FreeGSFast is no longer a drop-in replacement for FreeGS.
+The primary use case for FreeGS4E is to provide a fast equilibrium solver for the FreeGSNKE code. This has resulted in some changes to the FreeGS codebase that mean FreeGS4E is no longer a drop-in replacement for FreeGS. FreeGS4E is also not intended to be a standalone equilibrium solver, and some features have been removed to improve performance. Users looking for a static equilibrium solver should use FreeGS.
 
 Installing
 ----------
@@ -14,25 +14,12 @@ Installing
 Documentation
 -------------
 
-The manual is in the `docs` subdirectory, and [hosted here on readthedocs](http://freegs.readthedocs.io/en/latest/).
-
-Testing
--------
-
-Unit tests use [pytest](https://docs.pytest.org/en/latest/) so after installing, run with:
-
-    $ pytest
-
-The tests are in the `src/` subdirectory.
-
-A convergence test is [described in the manual](https://freegs.readthedocs.io/en/latest/tests.html#convergence-test). To run:
-
-    $ python test-convergence.py
+The FreeGS manual is in the `docs` subdirectory.
 
 Examples
 --------
 
-The Jupyter notebooks contain examples wuth additional notes
+The Jupyter notebooks contain examples with additional notes
 
 * MAST-example.ipynb 
 
@@ -68,24 +55,14 @@ are fixed. The plasma pressure on axis and plasma current are fixed.
 This demonstrates the coil current control code, finding X-points, and marking core region
 These routines are used inside the free boundary solver
 
-Files
------
-
-The "freegs" module consists of the following files:
-
-* **boundary.py**        - Operators for applying boundary conditions to plasma psi
-* **control.py**         - Routines for controlling coil currents based on constraints
-* **critical.py**        - Finds critical points (O- and X-points)
-* **equilibrium.py**     - Represents the plasma equilibrium state
-* **gradshafranov.py**   - Greens functions and operators for the Grad-Shafranov equation
-* **jtor.py**            - Routines for calculating toroidal current density (profiles)
-* **machine.py**         - Represents the coils and power supply circuits
-* **multigrid.py**       - The multigrid solver for the linear elliptic operator
-* **picard.py**          - Nonlinear solver, iterating the profiles and constraints
-* **plotting.py**        - Plotting routines using matplotlib
-
 License
 -------
+
+    Copyright 2024 Nicola C. Amorisco, George K. Holt, Adriano Agnello, and other contributors.
+
+    FreeGS4E is licensed under the GNU Lesser General Public License version 3. The license text is included in the file LICENSE.
+
+    The license text for FreeGS is reproduced below:
 
     Copyright 2016-2021 Ben Dudson, University of York, and other contributors.
     Email: benjamin.dudson@york.ac.uk
@@ -113,63 +90,4 @@ References
 Versions
 --------
 
-### FreeGSFast versions
-
-0.7.0  8 Nobember 2022
-  - Implemented faster routines for finding critical points.
-    - Old `find_critical` renamed `find_critical_old`.
-    - `find_critical` by default now calls `fastcrit`.
-    - `fastcrit` calls `scan_for_crit`, then sorts the points, discards X-points and removes duplicated (like `find_critical_old`).
-    - `scan_for_crit`, decorated with numba, guesses criticals on the mesh grid and then refines them with a second-order expansion of psi. Tested separately on egg-carton 2D function and on MAST-U synthetic equilibria.
-    - Numba decorator returns identity if numba is not available.
-  - Fixed minor bug when determinant of psi derivatives is null on a grid point.
-
-0.6.2  26 October 2022
-  - Minor bug fixes.
-
-0.6.1  26 August 2022
-  - Instantiation of FreeGSFast. No changes from FreeGS 0.6.1.
-
-### FreeGS versions
-0.6.1  11th February 2021
-  - Fixes for HDF5 reading and writing
-  - Fix Numpy deprecations
-  - Catch errors in optimisation measures, making that more robust
-  - Fix core mask in geqdsk file reading
-  - Flake8 fixes
-  - Move to Github actions
-
-0.6.0  29th January 2021
-  - Improve separatrix finding (Pablo Rodriguez-Fernandez)
-  - Update MAST-U machine description (James Harrison)
-  - Updated documentation
-  - Add tests for critical point finding
-  - Black format all library code
-  - Fix wall intersection calculation in optimisation
-  - Fix factor of pi in effectiveElongation (Chris Winnard)
-  - Miscellaneous fixes and tidying (Chris Winnard)
-  - Fix psi_bndry test in critical.core_mask
-  - Fix comments in Greens functions (James Morris)
-
-0.5.0  25th March 2020
-  - More tests, thanks to @ZedThree.
-  - Added more flexible coil types, thanks to Chris Marsden.
-    Includes support for shaped coils, multi-strand coils,
-    and up-down mirrored coils.
-  - Basic support for reading and writing AEQDSK files
-  - Added h5py to requirements, fixes for latest NumPy
-
-0.4.0  10th November 2019
-  - Add optimisation with Differential Evolution
-  - More unit testing, documentation
-
-0.3.0  28th July 2019
-  - Add 4th-order solver for potential
-  - Add convergence test
-
-0.2.0  12th March 2019
-  - Add field line tracer, `freegs.fieldtracer`
-  - Add Equilibrium.Btor toroidal field calculation
-  - Add Equilibrium.plasmaVolume
-  - Fix rlim, zlim saved into GEQDSK files
-
+0.1.0 
