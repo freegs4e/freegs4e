@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-import freegs
-from freegs.plotting import plotConstraints
+import freegs4e
+from freegs4e.plotting import plotConstraints
 
 #########################################
 # Create the machine, which specifies coil locations
 # and equilibrium, specifying the domain to solve over
 
-tokamak = freegs.machine.MASTU()
+tokamak = freegs4e.machine.MASTU()
 
 
-eq = freegs.Equilibrium(tokamak=tokamak,
+eq = freegs4e.Equilibrium(tokamak=tokamak,
                         Rmin=0.1, Rmax=2.0,    # Radial domain
                         Zmin=-2.1, Zmax=2.1,   # Height range
                         nx=65, ny=65)          # Number of grid points
@@ -18,7 +18,7 @@ eq = freegs.Equilibrium(tokamak=tokamak,
 #########################################
 # Plasma profiles
 
-profiles = freegs.jtor.ConstrainPaxisIp(6e4, # Plasma pressure on axis [Pascals]
+profiles = freegs4e.jtor.ConstrainPaxisIp(6e4, # Plasma pressure on axis [Pascals]
                                         1e6, # Plasma current [Amps]
                                         0.65, # vacuum f = R*Bt
                                         alpha_m = 1.0,
@@ -50,14 +50,14 @@ isoflux = [(Rx,-Zx, Rmid, 0.0)   # Outboard midplane, lower X-point
            ,(Rx, Zx, 0.95,  1.77)
            ]
 
-constrain = freegs.control.constrain(xpoints=xpoints, gamma=8e-6, isoflux=isoflux)
+constrain = freegs4e.control.constrain(xpoints=xpoints, gamma=8e-6, isoflux=isoflux)
 
 constrain(eq)
 
 #########################################
 # Nonlinear solve
 
-freegs.solve(eq,          # The equilibrium to adjust
+freegs4e.solve(eq,          # The equilibrium to adjust
              profiles,    # The plasma profiles
              constrain,   # Plasma control constraints
              show=True)   # Shows results at each nonlinear iteration
@@ -82,7 +82,7 @@ isoflux = [(Rx,-Zx, Rmid, 0.0)   # Outboard midplane, lower X-point
 
            ]
 
-constrain = freegs.control.constrain(xpoints=xpoints, gamma=1e-12, isoflux=isoflux)
+constrain = freegs4e.control.constrain(xpoints=xpoints, gamma=1e-12, isoflux=isoflux)
 
 # Turn off feedback control for all coils
 for label, coil in tokamak.coils:
@@ -112,7 +112,7 @@ tokamak["D5"].current = 1500.
 # Coil at bottom centre
 tokamak["D3"].current = 2800
 
-freegs.solve(eq,          # The equilibrium to adjust
+freegs4e.solve(eq,          # The equilibrium to adjust
              profiles,    # The plasma profiles
              constrain,   # Plasma control constraints
              show=True)   # Shows results at each nonlinear iteration
@@ -135,7 +135,7 @@ constrain.plot(axis=axis)
 ##############################################
 # Save to geqdsk file
 
-from freegs import geqdsk
+from freegs4e import geqdsk
 
 with open("mast-upgrade.geqdsk", "w") as f:
     geqdsk.write(eq, f)

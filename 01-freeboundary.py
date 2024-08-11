@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 
-import freegs
+import freegs4e
 
 #########################################
 # Create the machine, which specifies coil locations
 # and equilibrium, specifying the domain to solve over
 
-tokamak = freegs.machine.TestTokamak()
+tokamak = freegs4e.machine.TestTokamak()
 
-eq = freegs.Equilibrium(tokamak=tokamak,
+eq = freegs4e.Equilibrium(tokamak=tokamak,
                         Rmin=0.1, Rmax=2.0,    # Radial domain
                         Zmin=-1.0, Zmax=1.0,   # Height range
                         nx=65, ny=65,          # Number of grid points
-                        boundary=freegs.boundary.freeBoundaryHagenow)  # Boundary condition
+                        boundary=freegs4e.boundary.freeBoundaryHagenow)  # Boundary condition
 
 
 #########################################
 # Plasma profiles
 
-profiles = freegs.jtor.ConstrainPaxisIp(1e3, # Plasma pressure on axis [Pascals]
+profiles = freegs4e.jtor.ConstrainPaxisIp(1e3, # Plasma pressure on axis [Pascals]
                                         2e5, # Plasma current [Amps]
                                         2.0) # Vacuum f=R*Bt
 
@@ -33,12 +33,12 @@ xpoints = [(1.1, -0.6),   # (R,Z) locations of X-points
 
 isoflux = [(1.1,-0.6, 1.1,0.6)] # (R1,Z1, R2,Z2) pair of locations
 
-constrain = freegs.control.constrain(xpoints=xpoints, isoflux=isoflux)
+constrain = freegs4e.control.constrain(xpoints=xpoints, isoflux=isoflux)
 
 #########################################
 # Nonlinear solve
 
-freegs.solve(eq,          # The equilibrium to adjust
+freegs4e.solve(eq,          # The equilibrium to adjust
              profiles,    # The toroidal current profile function
              constrain)   # Constraint function to set coil currents
 
@@ -63,7 +63,7 @@ for psi in [0.01, 0.9, 0.95]:
 ##############################################
 # Save to G-EQDSK file
 
-from freegs import geqdsk
+from freegs4e import geqdsk
 
 with open("lsn.geqdsk", "w") as f:
     geqdsk.write(eq, f)

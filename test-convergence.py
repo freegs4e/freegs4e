@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import freegs
+import freegs4e
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -12,9 +12,9 @@ location = (1.2, 0.1)  # Location to record values at
 ############################################
 # Generate low resolution solution
 
-tokamak = freegs.machine.TestTokamak()
+tokamak = freegs4e.machine.TestTokamak()
 
-eq = freegs.Equilibrium(
+eq = freegs4e.Equilibrium(
     tokamak=tokamak,
     Rmin=0.1,
     Rmax=2.0,  # Radial domain
@@ -22,10 +22,10 @@ eq = freegs.Equilibrium(
     Zmax=1.0,  # Height range
     nx=start_resolution,
     ny=start_resolution,  # Number of grid points
-    boundary=freegs.boundary.freeBoundaryHagenow,
+    boundary=freegs4e.boundary.freeBoundaryHagenow,
 )
 
-profiles = freegs.jtor.ConstrainPaxisIp(
+profiles = freegs4e.jtor.ConstrainPaxisIp(
     1e3,  # Plasma pressure on axis [Pascals]
     2e5,  # Plasma current [Amps]
     2.0,  # Vacuum f=R*Bt
@@ -35,9 +35,9 @@ xpoints = [(1.1, -0.6), (1.1, 0.8)]  # (R,Z) locations of X-points
 
 isoflux = [(1.1, -0.6, 1.1, 0.6)]  # (R1,Z1, R2,Z2) pair of locations
 
-constrain = freegs.control.constrain(xpoints=xpoints, isoflux=isoflux)
+constrain = freegs4e.control.constrain(xpoints=xpoints, isoflux=isoflux)
 
-freegs.solve(
+freegs4e.solve(
     eq,  # The equilibrium to adjust
     profiles,  # The toroidal current profile function
     constrain,
@@ -67,10 +67,10 @@ for i in range(nrefinements):
     Z_old = eq.Z
 
     # Increase resolution
-    eq = freegs.equilibrium.refine(eq)
+    eq = freegs4e.equilibrium.refine(eq)
 
     # Re-solve
-    freegs.solve(eq, profiles, constrain, rtol=rtol, maxits=120)
+    freegs4e.solve(eq, profiles, constrain, rtol=rtol, maxits=120)
 
     resolutions.append(eq.R.shape[0])
 

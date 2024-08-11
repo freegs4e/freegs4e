@@ -1,6 +1,6 @@
-from freegs import geqdsk
-from freegs import machine
-from freegs.plotting import plotEquilibrium
+from freegs4e import geqdsk
+from freegs4e import machine
+from freegs4e.plotting import plotEquilibrium
 
 #tokamak = machine.MAST_sym()
 tokamak = machine.TestTokamak()

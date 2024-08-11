@@ -1,5 +1,5 @@
-FreeGS library
-==============
+FreeGS4E library
+================
 
 Tests and examples using components of the library
 

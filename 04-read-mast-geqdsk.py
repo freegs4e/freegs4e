@@ -1,6 +1,6 @@
-from freegs import geqdsk
-from freegs import machine
-from freegs.plotting import plotEquilibrium
+from freegs4e import geqdsk
+from freegs4e import machine
+from freegs4e.plotting import plotEquilibrium
 
 # Reading MAST equilibrium, up-down symmetric coils
 tokamak = machine.MAST()
