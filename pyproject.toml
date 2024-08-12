@@ -15,7 +15,7 @@ readme = "README.md"
 requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: LGPL3 License",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Operating System :: OS Independent"
 ]
 dynamic = ["dependencies", "optional-dependencies"]
@@ -25,7 +25,7 @@ dependencies = {file = ["requirements.txt"]}
 optional-dependencies = {dev = { file = ["requirements-dev.txt"] }}
 
 [project.urls]
-Homepage = "https://github.com/farscape-project/freegsfast"
+Homepage = "https://github.com/freegs4e/freegs4e"
 
 [tool.isort]
 profile = "black"
