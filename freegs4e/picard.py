@@ -1,22 +1,20 @@
 """
 Routines for solving the nonlinear part of the Grad-Shafranov equation
 
-Copyright 2016-2019 Ben Dudson, University of York. Email: benjamin.dudson@york.ac.uk
+Copyright 2024 Nicola C. Amorisco, Adriano Agnello, George K. Holt, Ben Dudson.
 
-This file is part of FreeGS.
-
-FreeGS is free software: you can redistribute it and/or modify
+FreeGS4E is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FreeGS is distributed in the hope that it will be useful,
+FreeGS4E is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with FreeGS.  If not, see <http://www.gnu.org/licenses/>.
+along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from numpy import amin, amax, array

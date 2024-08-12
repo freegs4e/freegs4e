@@ -1,15 +1,18 @@
 """
-FreeGS
-======
+FreeGS4E
+========
 
-Free boundary Grad-Shafranov solver
-
-
-.. moduleauthor:: Ben Dudson <benjamin.dudson@york.ac.uk>
+Free boundary Grad-Shafranov solver for time evolution
 
 
 License
 -------
+
+FreeGS4E is derived from FreeGS and distributed under the same license: the GNU Lesser General Public License version 3.
+
+Copyright 2024 Nicola C. Amorisco, George K. Holt, Adriano Agnello and other contributors.
+
+The original FreeGS license is as follows:
 
 Copyright 2016-2021 Ben Dudson, University of York and other contributors. 
 Email: benjamin.dudson@york.ac.uk
@@ -30,7 +33,7 @@ along with FreeGS.  If not, see <http://www.gnu.org/licenses/>.
 """
 from importlib import metadata
 
-__version__ = metadata.version("freegsfast")
+__version__ = metadata.version("freegs4e")
 
 from .equilibrium import Equilibrium
 

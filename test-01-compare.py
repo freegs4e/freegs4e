@@ -3,22 +3,22 @@
 # and compares the result
 
 
-import freegs
+import freegs4e
 
 from numpy import linspace, amin, amax, meshgrid, exp
 
 import matplotlib.pyplot as plt
 
-tokamak = freegs.machine.TestTokamak()
+tokamak = freegs4e.machine.TestTokamak()
 
-eq1 = freegs.Equilibrium(tokamak=tokamak,
+eq1 = freegs4e.Equilibrium(tokamak=tokamak,
                          Rmin=0.1, Rmax=2.0,    # Radial domain
                          Zmin = -2.0, Zmax = 2.0,
                          nx=65, ny=129)          # Number of grid points
 
-tokamak = freegs.machine.TestTokamak()
+tokamak = freegs4e.machine.TestTokamak()
 
-eq2 = freegs.Equilibrium(tokamak=tokamak,
+eq2 = freegs4e.Equilibrium(tokamak=tokamak,
                          Rmin=0.1, Rmax=2.0,    # Radial domain
                          Zmin=-1.0, Zmax=1.0,   # Height range
                          nx=65, ny=65)          # Number of grid points
@@ -39,12 +39,12 @@ xpoints = [(1.1, -0.6),   # (R,Z) locations of X-points
 
 isoflux = [(1.1,-0.6, 1.1,0.6)]
 
-constrain = freegs.control.constrain(xpoints=xpoints, isoflux=isoflux)
+constrain = freegs4e.control.constrain(xpoints=xpoints, isoflux=isoflux)
 
 constrain(eq1)
 constrain(eq2)
 
-profiles = freegs.jtor.ConstrainBetapIp(0.1, 1e6, 1.0)
+profiles = freegs4e.jtor.ConstrainBetapIp(0.1, 1e6, 1.0)
 
 jtor1 = profiles.Jtor(eq1.R, eq1.Z, eq1.psi())
 jtor2 = profiles.Jtor(eq2.R, eq2.Z, eq2.psi())
@@ -56,8 +56,8 @@ eq1.solve(profiles)
 eq2.solve(profiles)
 
 # Nonlinear solve
-#freegs.solve(eq1, profiles, constrain)
-#freegs.solve(eq2, profiles, constrain)
+#freegs4e.solve(eq1, profiles, constrain)
+#freegs4e.solve(eq2, profiles, constrain)
 
 psi1 = eq1.psi()
 psi2 = eq2.psi()

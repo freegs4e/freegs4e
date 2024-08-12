@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "freegsfast"
+name = "freegs4e"
 version = "0.1.0"
 authors = [
-    {name = "Adriano Agnello", email = "adriano.agnello@stfc.ac.uk"},
     {name = "Nicola Amorisco", email = "nicola.amorisco@stfc.ac.uk"},
     {name = "George Holt", email = "george.holt@stfc.ac.uk"},
+    {name = "Adriano Agnello", email = "adriano.agnello@stfc.ac.uk"},
 ]
-description = "Free boundary Grad-Shafranov solver for tokamak plasma equilibrium"
+description = "Free boundary tokamak plasma equilibrium Grad-Shafranov solver for time evolution"
 readme = "README.md"
 requires-python = ">=3.6"
 classifiers = [

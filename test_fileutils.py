@@ -1,4 +1,4 @@
-from freegs._fileutils import next_value
+from freegs4e._fileutils import next_value
 from numpy import allclose
 
 

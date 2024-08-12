@@ -1,14 +1,14 @@
 # Read MAST-U GEQDSK file, calculate connection length
 
-from freegs import geqdsk
-from freegs import machine
+from freegs4e import geqdsk
+from freegs4e import machine
 
 tokamak = machine.MASTU()
 
 with open("mast-upgrade.geqdsk") as f:
     eq = geqdsk.read(f, tokamak, show=False)
 
-from freegs import fieldtracer
+from freegs4e import fieldtracer
 import matplotlib.pyplot as plt
 
 # Plot equilibrium
