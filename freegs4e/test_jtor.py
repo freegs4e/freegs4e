@@ -15,7 +15,7 @@ def test_psinorm_range():
         R, Z = np.meshgrid(
             np.linspace(0.5, 1.5, 33), np.linspace(-1, 1, 33), indexing="ij"
         )
-        psi = np.exp((-((R - 1.0) ** 2) - Z ** 2) * 3) + np.exp(
+        psi = np.exp((-((R - 1.0) ** 2) - Z**2) * 3) + np.exp(
             (-((R - 1.0) ** 2) - (Z + 1) ** 2) * 3
         )
 

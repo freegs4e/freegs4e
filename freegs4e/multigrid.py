@@ -27,9 +27,9 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from numpy import zeros, max, abs, reshape
-from scipy.sparse.linalg import factorized
+from numpy import abs, max, reshape, zeros
 from scipy.sparse import eye
+from scipy.sparse.linalg import factorized
 
 
 class MGDirect:
@@ -109,7 +109,9 @@ class MGJacobi:
         return x.reshape(xi.shape)
 
 
-def createVcycle(nx, ny, generator, nlevels=4, ncycle=1, niter=10, direct=True):
+def createVcycle(
+    nx, ny, generator, nlevels=4, ncycle=1, niter=10, direct=True
+):
     """
     Create a hierarchy of solvers in a multigrid V-cycle
 
@@ -277,7 +279,9 @@ def smoothVcycle(A, x, b, dx, dy, niter=10, sublevels=0, direct=True):
 
         # smooth this error
         Cx = zeros(Cerror.shape)
-        Cx = smoothVcycle(A, Cx, Cerror, dx * 2.0, dy * 2.0, niter, sublevels - 1)
+        Cx = smoothVcycle(
+            A, Cx, Cerror, dx * 2.0, dy * 2.0, niter, sublevels - 1
+        )
 
         # Prolong the solution
         xupdate = interpolate(Cx)
@@ -325,14 +329,14 @@ class LaplacianOp:
             for y in range(1, ny - 1):
                 # Loop over points in the domain
 
-                b[x, y] = (f[x - 1, y] - 2 * f[x, y] + f[x + 1, y]) / dx ** 2 + (
+                b[x, y] = (f[x - 1, y] - 2 * f[x, y] + f[x + 1, y]) / dx**2 + (
                     f[x, y - 1] - 2 * f[x, y] + f[x, y + 1]
-                ) / dy ** 2
+                ) / dy**2
 
         return b
 
     def diag(self, dx, dy):
-        return -2.0 / dx ** 2 - 2.0 / dy ** 2
+        return -2.0 / dx**2 - 2.0 / dy**2
 
 
 class LaplaceSparse:
@@ -350,19 +354,19 @@ class LaplaceSparse:
         for x in range(1, nx - 1):
             for y in range(1, ny - 1):
                 row = x * ny + y
-                A[row, row] = -2.0 / dx ** 2 - 2.0 / dy ** 2
+                A[row, row] = -2.0 / dx**2 - 2.0 / dy**2
 
                 # y-1
-                A[row, row - 1] = 1.0 / dy ** 2
+                A[row, row - 1] = 1.0 / dy**2
 
                 # y+1
-                A[row, row + 1] = 1.0 / dy ** 2
+                A[row, row + 1] = 1.0 / dy**2
 
                 # x-1
-                A[row, row - ny] = 1.0 / dx ** 2
+                A[row, row - ny] = 1.0 / dx**2
 
                 # x+1
-                A[row, row + ny] = 1.0 / dx ** 2
+                A[row, row + ny] = 1.0 / dx**2
         # Convert to Compressed Sparse Row (CSR) format
         return A.tocsr()
 
@@ -371,10 +375,10 @@ if __name__ == "__main__":
 
     # Test case
 
-    from numpy import meshgrid, exp, linspace
-    import matplotlib.pyplot as plt
-
     from timeit import default_timer as timer
+
+    import matplotlib.pyplot as plt
+    from numpy import exp, linspace, meshgrid
 
     nx = 65
     ny = 65
@@ -384,7 +388,7 @@ if __name__ == "__main__":
 
     xx, yy = meshgrid(linspace(0, 1, nx), linspace(0, 1, ny))
 
-    rhs = exp(-((xx - 0.5) ** 2 + (yy - 0.5) ** 2) / 0.4 ** 2)
+    rhs = exp(-((xx - 0.5) ** 2 + (yy - 0.5) ** 2) / 0.4**2)
 
     rhs[0, :] = 0.0
     rhs[:, 0] = 0.0
@@ -428,7 +432,13 @@ if __name__ == "__main__":
 
     start = timer()
     solver = createVcycle(
-        nx, ny, LaplaceSparse(1.0, 1.0), ncycle=2, niter=5, nlevels=4, direct=True
+        nx,
+        ny,
+        LaplaceSparse(1.0, 1.0),
+        ncycle=2,
+        niter=5,
+        nlevels=4,
+        direct=True,
     )
 
     start_solve = timer()

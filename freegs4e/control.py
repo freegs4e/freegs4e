@@ -4,10 +4,9 @@ Plasma control system
 Use constraints to adjust coil currents
 """
 
-from numpy import dot, transpose, eye, array
-from numpy.linalg import inv
 import numpy as np
-
+from numpy import array, dot, eye, transpose
+from numpy.linalg import inv
 from scipy import optimize
 
 from . import critical
@@ -117,7 +116,7 @@ class constrain(object):
 
         # Calculate the change in coil current
         current_change = dot(
-            inv(dot(transpose(A), A) + self.gamma ** 2 * eye(ncontrols)),
+            inv(dot(transpose(A), A) + self.gamma**2 * eye(ncontrols)),
             dot(transpose(A), b),
         )
         # print("Current changes: " + str(current_change))

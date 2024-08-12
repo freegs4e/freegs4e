@@ -23,27 +23,17 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from . import _geqdsk
-from . import critical
-from .equilibrium import Equilibrium
-from .machine import Wall
-from . import jtor
-from . import control
-from . import picard
-from .gradshafranov import mu0
-
-from scipy import interpolate
-from numpy import (
-    linspace,
-    reshape,
-    ravel,
-    zeros,
-    clip,
-)
 import math
-import numpy as np
 
+import numpy as np
+from numpy import clip, linspace, ravel, reshape, zeros
+from scipy import interpolate
 from scipy.integrate import romb
+
+from . import _geqdsk, control, critical, jtor, picard
+from .equilibrium import Equilibrium
+from .gradshafranov import mu0
+from .machine import Wall
 
 
 def write(eq, fh, label=None, oxpoints=None, fileformat=_geqdsk.write):
@@ -80,8 +70,10 @@ def write(eq, fh, label=None, oxpoints=None, fileformat=_geqdsk.write):
     data = {
         "nx": nx,
         "ny": ny,
-        "rdim": rmax - rmin,  # Horizontal dimension in meter of computational box
-        "zdim": zmax - zmin,  # Vertical dimension in meter of computational box
+        "rdim": rmax
+        - rmin,  # Horizontal dimension in meter of computational box
+        "zdim": zmax
+        - zmin,  # Vertical dimension in meter of computational box
         "rcentr": R0,  # R in meter of vacuum toroidal magnetic field BCENTR
         "bcentr": fvac / R0,  # Vacuum magnetic field at rcentr
         "rleft": rmin,  # Minimum R in meter of rectangular computational box
@@ -95,7 +87,9 @@ def write(eq, fh, label=None, oxpoints=None, fileformat=_geqdsk.write):
 
     data["cpasma"] = eq.plasmaCurrent()  # Plasma current [A]
 
-    psinorm = linspace(0.0, 1.0, nx, endpoint=False)  # Does not include separatrix
+    psinorm = linspace(
+        0.0, 1.0, nx, endpoint=False
+    )  # Does not include separatrix
 
     data["fpol"] = eq.fpol(psinorm)
     data["pres"] = eq.pressure(psinorm)
@@ -122,7 +116,9 @@ def write(eq, fh, label=None, oxpoints=None, fileformat=_geqdsk.write):
     # rbdry, zbdry contain the boundary of the plasma
 
     isoflux = np.array(
-        critical.find_separatrix(eq, ntheta=101, opoint=opoint, xpoint=xpoint, psi=psi)
+        critical.find_separatrix(
+            eq, ntheta=101, opoint=opoint, xpoint=xpoint, psi=psi
+        )
     )
 
     ind = np.argmin(isoflux[:, 1])
@@ -220,7 +216,9 @@ def read(
         import matplotlib.pyplot as plt
 
     if fit_sol and domain:
-        raise ValueError("Sorry, fit_sol cannot be used with the domain keyword")
+        raise ValueError(
+            "Sorry, fit_sol cannot be used with the domain keyword"
+        )
 
     if axis is not None:
         show = True
@@ -241,7 +239,8 @@ def read(
 
     if not (isPow2(nx - 1) and isPow2(ny - 1)):
         print(
-            "Warning: Input grid size %d x %d has sizes which are not 2^n+1" % (nx, ny)
+            "Warning: Input grid size %d x %d has sizes which are not 2^n+1"
+            % (nx, ny)
         )
 
         rin = linspace(0, 1, nx)
@@ -360,13 +359,21 @@ def read(
             print("Changing resolution: {} x {}".format(newnx, newny))
 
         # Create an interpolation function for Jtor and the input psi
-        Jtor_func = interpolate.RectBivariateSpline(eq.R[:, 0], eq.Z[0, :], Jtor)
+        Jtor_func = interpolate.RectBivariateSpline(
+            eq.R[:, 0], eq.Z[0, :], Jtor
+        )
         psi_func = interpolate.RectBivariateSpline(eq.R[:, 0], eq.Z[0, :], psi)
 
         # Create a new Equilibrium object
         # (replacing previous 'eq')
         eq = Equilibrium(
-            tokamak=machine, Rmin=Rmin, Rmax=Rmax, Zmin=Zmin, Zmax=Zmax, nx=nx, ny=ny
+            tokamak=machine,
+            Rmin=Rmin,
+            Rmax=Rmax,
+            Zmin=Zmin,
+            Zmax=Zmax,
+            nx=nx,
+            ny=ny,
         )
 
         # Interpolate Jtor and psi onto new grid
@@ -480,6 +487,8 @@ def read(
         )
 
         # Save the control system to eq
-        eq.control = control.constrain(xpoints=xpoint, isoflux=isoflux, gamma=1e-14)
+        eq.control = control.constrain(
+            xpoints=xpoint, isoflux=isoflux, gamma=1e-14
+        )
 
     return eq

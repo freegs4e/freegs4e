@@ -1,5 +1,6 @@
-from . import polygons
 import numpy as np
+
+from . import polygons
 
 
 def test_nointersect():
@@ -15,7 +16,10 @@ def test_lineintersect():
 # Two squares
 def test_squareintersect():
     assert polygons.intersect(
-        [0, 1, 1, 0], [0, 0, 1, 1], [-0.5, 0.5, 0.5, -0.5], [0.5, 0.5, 1.5, 1.5]
+        [0, 1, 1, 0],
+        [0, 0, 1, 1],
+        [-0.5, 0.5, 0.5, -0.5],
+        [0.5, 0.5, 1.5, 1.5],
     )
 
 
@@ -37,8 +41,12 @@ def test_clockwise():
 
 def test_triangulate_three():
     # Always returns a triangle in clockwise order
-    assert polygons.triangulate([(0, 0), (0, 1), (1, 0)]) == [[(0, 0), (0, 1), (1, 0)]]
-    assert polygons.clockwise(polygons.triangulate([(0, 0), (1, 0), (0, 1)])[0])
+    assert polygons.triangulate([(0, 0), (0, 1), (1, 0)]) == [
+        [(0, 0), (0, 1), (1, 0)]
+    ]
+    assert polygons.clockwise(
+        polygons.triangulate([(0, 0), (1, 0), (0, 1)])[0]
+    )
 
 
 def test_triangulate_four():
@@ -51,5 +59,6 @@ def test_triangulate_four():
     assert polygons.area(result[1]) > 0.0
     # Sum of areas equal to original area
     assert np.isclose(
-        polygons.area(square), polygons.area(result[0]) + polygons.area(result[1])
+        polygons.area(square),
+        polygons.area(result[0]) + polygons.area(result[1]),
     )

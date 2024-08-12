@@ -1,6 +1,6 @@
-from .shaped_coil import ShapedCoil
-
 import numpy as np
+
+from .shaped_coil import ShapedCoil
 
 
 def test_area():
@@ -20,7 +20,12 @@ def test_move_R():
         [(0.95, 0.1), (0.95, 0.2), (1.05, 0.2), (1.05, 0.1)], current=100.0
     )
     coil2 = ShapedCoil(
-        [(0.95 + dR, 0.1), (0.95 + dR, 0.2), (1.05 + dR, 0.2), (1.05 + dR, 0.1)],
+        [
+            (0.95 + dR, 0.1),
+            (0.95 + dR, 0.2),
+            (1.05 + dR, 0.2),
+            (1.05 + dR, 0.1),
+        ],
         current=100.0,
     )
 
@@ -44,7 +49,12 @@ def test_move_Z():
         [(0.95, 0.1), (0.95, 0.2), (1.05, 0.2), (1.05, 0.1)], current=100.0
     )
     coil2 = ShapedCoil(
-        [(0.95, 0.1 + dZ), (0.95, 0.2 + dZ), (1.05, 0.2 + dZ), (1.05, 0.1 + dZ)],
+        [
+            (0.95, 0.1 + dZ),
+            (0.95, 0.2 + dZ),
+            (1.05, 0.2 + dZ),
+            (1.05, 0.1 + dZ),
+        ],
         current=100.0,
     )
 

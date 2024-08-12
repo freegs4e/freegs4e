@@ -2,9 +2,11 @@
 # Test calculation of magnetic field due to coils
 # and forces between coils
 
-from . import machine
-import numpy as np
 import math
+
+import numpy as np
+
+from . import machine
 
 mu0 = 4e-7 * np.pi
 
@@ -19,7 +21,7 @@ def test_coil_axis():
     coil = machine.Coil(Rcoil, 1.0, current=current)
 
     def analytic_Bz(dZ):
-        return (mu0 / 2) * Rcoil ** 2 * current / (dZ ** 2 + Rcoil ** 2) ** 1.5
+        return (mu0 / 2) * Rcoil**2 * current / (dZ**2 + Rcoil**2) ** 1.5
 
     # Note: Can't evaluate at R=0,
     assert math.isclose(coil.Br(0.0001, 2.0), 0.0, abs_tol=1e-8)

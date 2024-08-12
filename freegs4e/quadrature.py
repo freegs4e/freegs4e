@@ -65,12 +65,36 @@ def triangle_quad(triangle, n=6):
         d = 0.5 * (1.0 - c)
 
         return [
-            ((a * r1 + b * r2 + b * r3), (a * z1 + b * z2 + b * z3), 0.109951743655322),
-            ((b * r1 + a * r2 + b * r3), (b * z1 + a * z2 + b * z3), 0.109951743655322),
-            ((b * r1 + b * r2 + a * r3), (b * z1 + b * z2 + a * z3), 0.109951743655322),
-            ((c * r1 + d * r2 + d * r3), (c * z1 + d * z2 + d * z3), 0.223381589678011),
-            ((d * r1 + c * r2 + d * r3), (d * z1 + c * z2 + d * z3), 0.223381589678011),
-            ((d * r1 + d * r2 + c * r3), (d * z1 + d * z2 + c * z3), 0.223381589678011),
+            (
+                (a * r1 + b * r2 + b * r3),
+                (a * z1 + b * z2 + b * z3),
+                0.109951743655322,
+            ),
+            (
+                (b * r1 + a * r2 + b * r3),
+                (b * z1 + a * z2 + b * z3),
+                0.109951743655322,
+            ),
+            (
+                (b * r1 + b * r2 + a * r3),
+                (b * z1 + b * z2 + a * z3),
+                0.109951743655322,
+            ),
+            (
+                (c * r1 + d * r2 + d * r3),
+                (c * z1 + d * z2 + d * z3),
+                0.223381589678011,
+            ),
+            (
+                (d * r1 + c * r2 + d * r3),
+                (d * z1 + c * z2 + d * z3),
+                0.223381589678011,
+            ),
+            (
+                (d * r1 + d * r2 + c * r3),
+                (d * z1 + d * z2 + c * z3),
+                0.223381589678011,
+            ),
         ]
     else:
         raise ValueError("Quadrature not available for n={}".format(n))
@@ -99,7 +123,9 @@ def polygon_quad(polygon, n=6):
 
     quadrature = []  # List of all points
     for triangle, area in zip(triangles, areas):
-        points = triangle_quad(triangle, n=n)  # Quadrature points for this triangle
+        points = triangle_quad(
+            triangle, n=n
+        )  # Quadrature points for this triangle
         quadrature += [
             (r, z, w * area / total_area) for r, z, w in points
         ]  # Modify the weights

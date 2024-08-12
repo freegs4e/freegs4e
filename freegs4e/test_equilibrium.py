@@ -1,17 +1,16 @@
-from . import equilibrium
-from . import boundary
-from . import jtor
-from . import picard
-
 import numpy as np
+
+from . import boundary, equilibrium, jtor, picard
 
 
 def test_inoutseparatrix():
 
-    eq = equilibrium.Equilibrium(Rmin=0.1, Rmax=2.0, Zmin=-1.0, Zmax=1.0, nx=65, ny=65)
+    eq = equilibrium.Equilibrium(
+        Rmin=0.1, Rmax=2.0, Zmin=-1.0, Zmax=1.0, nx=65, ny=65
+    )
 
     # Two O-points, one X-point half way between them
-    psi = np.exp((-((eq.R - 1.0) ** 2) - eq.Z ** 2) * 3) + np.exp(
+    psi = np.exp((-((eq.R - 1.0) ** 2) - eq.Z**2) * 3) + np.exp(
         (-((eq.R - 1.0) ** 2) - (eq.Z + 1) ** 2) * 3
     )
 
@@ -27,7 +26,9 @@ def test_fixed_boundary_psi():
     # This is adapted from example 5
 
     profiles = jtor.ConstrainPaxisIp(
-        1e3, 1e5, 1.0  # Plasma pressure on axis [Pascals]  # Plasma current [Amps]
+        1e3,
+        1e5,
+        1.0,  # Plasma pressure on axis [Pascals]  # Plasma current [Amps]
     )  # fvac = R*Bt
 
     eq = equilibrium.Equilibrium(
@@ -51,7 +52,9 @@ def test_fixed_boundary_psi():
 
 
 def test_setSolverVcycle():
-    eq = equilibrium.Equilibrium(Rmin=0.1, Rmax=2.0, Zmin=-1.0, Zmax=1.0, nx=65, ny=65)
+    eq = equilibrium.Equilibrium(
+        Rmin=0.1, Rmax=2.0, Zmin=-1.0, Zmax=1.0, nx=65, ny=65
+    )
 
     oldsolver = eq._solver
     eq.setSolverVcycle(nlevels=2, ncycle=1, niter=5)
