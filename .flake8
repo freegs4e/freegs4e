@@ -1,0 +1,5 @@
+exclude =
+    .git
+    __pycache__
+    build
+    dist

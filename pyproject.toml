@@ -26,3 +26,9 @@ optional-dependencies = {dev = { file = ["requirements-dev.txt"] }}
 
 [project.urls]
 Homepage = "https://github.com/farscape-project/freegsfast"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 79
