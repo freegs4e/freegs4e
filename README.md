@@ -8,8 +8,24 @@ The primary use case for FreeGS4E is to provide a fast equilibrium solver for th
 Installing
 ----------
 
-1. Create a new virtual environment.
-2. Download this repository and install locally using `pip install -e .`
+FreeGS4E is available on PyPI and can be installed with pip:
+
+```bash
+pip install freegs4e
+```
+
+To build from source:
+
+
+1. Download this repository
+   ```bash
+   git clone https://github.com/freegs4e/freegs4e
+   ```
+2. Install with pip
+   ```bash
+   cd freegs4e
+   pip install .
+   ```
 
 Documentation
 -------------
@@ -65,6 +81,10 @@ git clone https://github.com/freegs4e/freegs4e
 cd freegs4e
 pip install -e ".[dev]"
 ```
+
+Changes to the `main` branch must be made through pull requests.
+
+If you don't have write access to the repository, pull requests through GitHub forks are welcome.
 
 Pre-commit hooks are used to ensure code quality. To install the pre-commit hooks, run:
 
