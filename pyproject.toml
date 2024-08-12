@@ -6,9 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "freegs4e"
 version = "0.1.0"
 authors = [
-    {name = "Nicola Amorisco", email = "nicola.amorisco@stfc.ac.uk"},
-    {name = "George Holt", email = "george.holt@stfc.ac.uk"},
-    {name = "Adriano Agnello", email = "adriano.agnello@stfc.ac.uk"},
+    {name = "The FreeGS4E and FreeGS developers"}
 ]
 description = "Free boundary tokamak plasma equilibrium Grad-Shafranov solver for time evolution"
 readme = "README.md"
