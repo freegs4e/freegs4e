@@ -41,7 +41,10 @@ def test_quadratic():
     # The optimiser can control two coefficients,
     # and should use calculate_score to evaluate solutions
     result = optimiser.optimise(
-        start_values, [ControlIndex(0), ControlIndex(1)], calculate_score, maxgen=300
+        start_values,
+        [ControlIndex(0), ControlIndex(1)],
+        calculate_score,
+        maxgen=300,
     )
 
     # Answer should be close to (1,2)
@@ -141,7 +144,9 @@ if __name__ == "__main__":
         best_point = axis.scatter([best[1][0]], [best[1][1]], c="red")
 
         axis.figure.canvas.draw()
-        axis.set_title("Generation: {}, Best score: {}".format(generation, best[0]))
+        axis.set_title(
+            "Generation: {}, Best score: {}".format(generation, best[0])
+        )
         plt.pause(0.5)
 
     result = optimiser.optimise(

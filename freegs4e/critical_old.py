@@ -20,33 +20,35 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-
 from unittest import makeSuite
-from scipy import interpolate
-from numpy import zeros
-from numpy.linalg import inv
+
+import numpy as np
 from numpy import (
-    dot,
-    linspace,
-    argmax,
-    argmin,
     abs,
-    clip,
-    sin,
-    cos,
-    pi,
     amax,
     arctan2,
+    argmax,
+    argmin,
+    clip,
+    cos,
+    dot,
+    linspace,
+    pi,
+    sin,
     sqrt,
     sum,
+    zeros,
 )
-import numpy as np
+from numpy.linalg import inv
+from scipy import interpolate
 
 try:
     from numba import njit
 except ImportError:
+
     def njit(*args, **kwargs):
         return lambda f: f
+
 
 from warnings import warn
 
@@ -80,13 +82,15 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
     f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
 
     # Find candidate locations, based on minimising Bp^2
-    Bp2 = (f(R, Z, dx=1, grid=False) ** 2 + f(R, Z, dy=1, grid=False) ** 2) / R ** 2
+    Bp2 = (
+        f(R, Z, dx=1, grid=False) ** 2 + f(R, Z, dy=1, grid=False) ** 2
+    ) / R**2
 
     # Get grid resolution, which determines a reasonable tolerance
     # for the Newton iteration search area
     dR = R[1, 0] - R[0, 0]
     dZ = Z[0, 1] - Z[0, 0]
-    radius_sq = 9 * (dR ** 2 + dZ ** 2)
+    radius_sq = 9 * (dR**2 + dZ**2)
 
     # Find local minima
 
@@ -125,23 +129,25 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
                     Br = -f(R1, Z1, dy=1, grid=False) / R1
                     Bz = f(R1, Z1, dx=1, grid=False) / R1
 
-                    if Br ** 2 + Bz ** 2 < 1e-6:
+                    if Br**2 + Bz**2 < 1e-6:
                         # Found a minimum. Classify as either
                         # O-point or X-point
 
                         dR = R[1, 0] - R[0, 0]
                         dZ = Z[0, 1] - Z[0, 0]
-                        d2dr2 = (psi[i + 2, j] - 2.0 * psi[i, j] + psi[i - 2, j]) / (
-                            2.0 * dR
-                        ) ** 2
-                        d2dz2 = (psi[i, j + 2] - 2.0 * psi[i, j] + psi[i, j - 2]) / (
-                            2.0 * dZ
-                        ) ** 2
+                        d2dr2 = (
+                            psi[i + 2, j] - 2.0 * psi[i, j] + psi[i - 2, j]
+                        ) / (2.0 * dR) ** 2
+                        d2dz2 = (
+                            psi[i, j + 2] - 2.0 * psi[i, j] + psi[i, j - 2]
+                        ) / (2.0 * dZ) ** 2
                         d2drdz = (
-                            (psi[i + 2, j + 2] - psi[i + 2, j - 2]) / (4.0 * dZ)
-                            - (psi[i - 2, j + 2] - psi[i - 2, j - 2]) / (4.0 * dZ)
+                            (psi[i + 2, j + 2] - psi[i + 2, j - 2])
+                            / (4.0 * dZ)
+                            - (psi[i - 2, j + 2] - psi[i - 2, j - 2])
+                            / (4.0 * dZ)
                         ) / (4.0 * dR)
-                        D = d2dr2 * d2dz2 - d2drdz ** 2
+                        D = d2dr2 * d2dz2 - d2drdz**2
 
                         if D < 0.0:
                             # Found X-point
@@ -168,7 +174,9 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
                     count += 1
                     # If (R1,Z1) is too far from (R0,Z0) then discard
                     # or if we've taken too many iterations
-                    if ((R1 - R0) ** 2 + (Z1 - Z0) ** 2 > radius_sq) or (count > 100):
+                    if ((R1 - R0) ** 2 + (Z1 - Z0) ** 2 > radius_sq) or (
+                        count > 100
+                    ):
                         # Discard this point
                         break
 
@@ -241,65 +249,72 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
 
     return opoint, xpoint
 
+
 # Remove duplicates
 def remove_dup(points):
-	result = []
-	for n, p in enumerate(points):
-		dup = False
-		for p2 in result:
-			if (p[0] - p2[0]) ** 2 + (p[1] - p2[1]) ** 2 < 1e-5:
-				dup = True  # Duplicate
-				break
-		if not dup:
-			result.append(p)  # Add to the list
-	return result
+    result = []
+    for n, p in enumerate(points):
+        dup = False
+        for p2 in result:
+            if (p[0] - p2[0]) ** 2 + (p[1] - p2[1]) ** 2 < 1e-5:
+                dup = True  # Duplicate
+                break
+        if not dup:
+            result.append(p)  # Add to the list
+    return result
 
-def find_critical(R, Z, psi, mask_inside_limiter=None, signIp=1, discard_xpoints=True):
+
+def find_critical(
+    R, Z, psi, mask_inside_limiter=None, signIp=1, discard_xpoints=True
+):
     # if old:
     #     opoint, xpoint = find_critical_old(R,Z,psi, discard_xpoints)
     # else:
     opoint, xpoint = fastcrit(R, Z, psi, mask_inside_limiter)
 
-    if len(xpoint)>0 and (signIp is not None):
+    if len(xpoint) > 0 and (signIp is not None):
         # select xpoint with the correct ordering wrt Ip
-        xpoint = xpoint[((xpoint[:,2] - opoint[:1,2])*signIp) < 0]
-    if len(xpoint)>1:
-        # check distance to opoint and in case discard xpoints on non-monotonic LOS 
-        closer_xpoint = np.argmin(np.linalg.norm((xpoint-opoint[:1])[:,:2], axis=-1))
-        if closer_xpoint != 0: 
+        xpoint = xpoint[((xpoint[:, 2] - opoint[:1, 2]) * signIp) < 0]
+    if len(xpoint) > 1:
+        # check distance to opoint and in case discard xpoints on non-monotonic LOS
+        closer_xpoint = np.argmin(
+            np.linalg.norm((xpoint - opoint[:1])[:, :2], axis=-1)
+        )
+        if closer_xpoint != 0:
             f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
             result = False
             while result is False:
                 result = discard_xpoints_f(opoint[0], xpoint[0], f)
                 if result is False:
                     xpoint = xpoint[1:]
-                    result = len(xpoint)<1
+                    result = len(xpoint) < 1
             print(xpoint)
     return opoint, xpoint
+
 
 # # this is 10x faster if the numba import works; otherwise, @njit is the identity and fastcrit is 3x faster anyways
 @njit(fastmath=True, cache=True)
 def scan_for_crit(R, Z, psi):
     dR = R[1, 0] - R[0, 0]
     dZ = Z[0, 1] - Z[0, 0]
-    Bp2=np.zeros_like(psi)
-    psiR=Bp2.copy()
-    psiZ=Bp2.copy()
-    psiR[1:-1,1:-1] = 0.5*(psi[2:,1:-1]-psi[:-2,1:-1])/dR
-    psiZ[1:-1,1:-1] = 0.5*(psi[1:-1,2:]-psi[1:-1,:-2])/dZ
+    Bp2 = np.zeros_like(psi)
+    psiR = Bp2.copy()
+    psiZ = Bp2.copy()
+    psiR[1:-1, 1:-1] = 0.5 * (psi[2:, 1:-1] - psi[:-2, 1:-1]) / dR
+    psiZ[1:-1, 1:-1] = 0.5 * (psi[1:-1, 2:] - psi[1:-1, :-2]) / dZ
     #
- #    psiR[0,:]=(psi[1,:]-psi[0,:])/dR
-#     psiR[-1,:]=(psi[-1,:]-psi[-2,:])/dR
-#     psiR[1:-1,0]=(psi[1:,0]-psi[:-1,0])/dR
-#     psiR[1:-1,-1]=(psi[1:,-1]-psi[:-1,-0])/dR
+    #    psiR[0,:]=(psi[1,:]-psi[0,:])/dR
+    #     psiR[-1,:]=(psi[-1,:]-psi[-2,:])/dR
+    #     psiR[1:-1,0]=(psi[1:,0]-psi[:-1,0])/dR
+    #     psiR[1:-1,-1]=(psi[1:,-1]-psi[:-1,-0])/dR
     #
-    Bp2[:,:]= (psiR**2 + psiZ**2)#/R[:,:]**2
+    Bp2[:, :] = psiR**2 + psiZ**2  # /R[:,:]**2
     #
-    xpoint = [(-999.0,-999.0,-999.0)]
-    opoint = [(-999.0,-999.0,-999.0)]
+    xpoint = [(-999.0, -999.0, -999.0)]
+    opoint = [(-999.0, -999.0, -999.0)]
     # start off by finding coarse values of Bp2 closest to 0.0 as in Ben Dudsons's routine
-    for i in range(1,len(Bp2)-1):
-        for j in range(1,len(Bp2[0])-1):
+    for i in range(1, len(Bp2) - 1):
+        for j in range(1, len(Bp2[0]) - 1):
             if (
                 (Bp2[i, j] < Bp2[i + 1, j + 1])
                 and (Bp2[i, j] < Bp2[i + 1, j])
@@ -313,55 +328,70 @@ def scan_for_crit(R, Z, psi):
                 # Found local minimum
                 R0 = R[i, j]
                 Z0 = Z[i, j]
-                fR , fZ = psiR[i,j], psiZ[i,j]
-                fRR = (psi[i+1,j]-2*psi[i,j]+psi[i-1,j])/dR**2
-                fZZ = (psi[i,j+1]-2*psi[i,j]+psi[i,j-1])/dZ**2
-                fRZ = 0.5*(psi[i+1,j+1] + psi[i-1,j-1] -psi[i-1,j+1] - psi[i+1,j-1] )/(dR*dZ)
-                det = fRR*fZZ-0.25*fRZ**2
+                fR, fZ = psiR[i, j], psiZ[i, j]
+                fRR = (psi[i + 1, j] - 2 * psi[i, j] + psi[i - 1, j]) / dR**2
+                fZZ = (psi[i, j + 1] - 2 * psi[i, j] + psi[i, j - 1]) / dZ**2
+                fRZ = (
+                    0.5
+                    * (
+                        psi[i + 1, j + 1]
+                        + psi[i - 1, j - 1]
+                        - psi[i - 1, j + 1]
+                        - psi[i + 1, j - 1]
+                    )
+                    / (dR * dZ)
+                )
+                det = fRR * fZZ - 0.25 * fRZ**2
                 #
-                if det!=0:
-                    delta_R = -(fR*fZZ-0.5*fRZ*fZ)/det
-                    delta_Z = -(fZ*fRR-0.5*fRZ*fR)/det
-                if (np.abs(delta_R)<=dR and np.abs(delta_Z)<=dZ):
-                    est_psi = psi[i,j]+0.5*(fR*delta_R + fZ*delta_Z) #+ 0.5*(fRR*delta_R**2 + fZZ*delta_Z**2 + fRZ*delta_R*delta_Z)
-                    crpoint = (R0+delta_R , Z0+delta_Z , est_psi)
-                    if det>0.0 : opoint = [crpoint] + opoint
-                    else: xpoint = [crpoint] + xpoint
+                if det != 0:
+                    delta_R = -(fR * fZZ - 0.5 * fRZ * fZ) / det
+                    delta_Z = -(fZ * fRR - 0.5 * fRZ * fR) / det
+                if np.abs(delta_R) <= dR and np.abs(delta_Z) <= dZ:
+                    est_psi = psi[i, j] + 0.5 * (
+                        fR * delta_R + fZ * delta_Z
+                    )  # + 0.5*(fRR*delta_R**2 + fZZ*delta_Z**2 + fRZ*delta_R*delta_Z)
+                    crpoint = (R0 + delta_R, Z0 + delta_Z, est_psi)
+                    if det > 0.0:
+                        opoint = [crpoint] + opoint
+                    else:
+                        xpoint = [crpoint] + xpoint
 
     xpoint = np.array(xpoint)
     opoint = np.array(opoint)
     # do NOT remove the "pop" command below, the lists were initialised with (-999.,-999.) so that numba could compile
     # xpoint.pop()
     # opoint.pop()
-    xpoint = xpoint[xpoint[:,0]>-990]
-    opoint = opoint[opoint[:,0]>-990]    
+    xpoint = xpoint[xpoint[:, 0] > -990]
+    opoint = opoint[opoint[:, 0] > -990]
     return opoint, xpoint
 
 
 def fastcrit(R, Z, psi, mask_inside_limiter):
-    opoint , xpoint = scan_for_crit(R, Z, psi)
+    opoint, xpoint = scan_for_crit(R, Z, psi)
 
     len_opoint = len(opoint)
     if len_opoint == 0:
         # Can't order primary O-point, X-point so return
-        raise ValueError('No opoints found!')
+        raise ValueError("No opoints found!")
         # return opoint, xpoint
     elif mask_inside_limiter is not None:
         # remove any opoint outside the limiter
-        posR = np.argmin((R[:,:1].T - opoint[:,:1])**2, axis=1)
-        posZ = np.argmin((Z[:1,:] - opoint[:,1:2])**2, axis=1)   
-        opoint = opoint[mask_inside_limiter[posR,posZ]]
+        posR = np.argmin((R[:, :1].T - opoint[:, :1]) ** 2, axis=1)
+        posZ = np.argmin((Z[:1, :] - opoint[:, 1:2]) ** 2, axis=1)
+        opoint = opoint[mask_inside_limiter[posR, posZ]]
 
     if len_opoint == 0:
         # Can't order primary O-point, X-point so return
-        raise ValueError('No opoints found!')
+        raise ValueError("No opoints found!")
     elif len_opoint > 1:
         # Find primary O-point by sorting by distance from middle of domain
         Rmid = 0.5 * (R[-1, 0] + R[0, 0])
         Zmid = 0.5 * (Z[0, -1] + Z[0, 0])
-        opoint_ordering = np.argsort((opoint[:,0]-Rmid)**2 + (opoint[:,1]-Zmid)**2)
+        opoint_ordering = np.argsort(
+            (opoint[:, 0] - Rmid) ** 2 + (opoint[:, 1] - Zmid) ** 2
+        )
         opoint = opoint[opoint_ordering]
-    
+
     # # check that primary opoint is inside the limiter
     # result = False
     # while result is False:
@@ -372,7 +402,7 @@ def fastcrit(R, Z, psi, mask_inside_limiter):
     #         if len(opoint) == 0:
     #             raise ValueError('No valid opoints found!')
     #     else:
-    #         result = True    
+    #         result = True
     psi_axis = opoint[0][2]
     # opoint.sort(key=lambda x: (x[0] - Rmid) ** 2 + (x[1] - Zmid) ** 2)
 
@@ -415,18 +445,19 @@ def fastcrit(R, Z, psi, mask_inside_limiter):
     #     xpoint = xpt_keep
 
     # Sort X-points by distance to primary O-point in psi space
-    if len(xpoint)>1:
-        xpoint_ordering = np.argsort((xpoint[:,2]-psi_axis)**2)
+    if len(xpoint) > 1:
+        xpoint_ordering = np.argsort((xpoint[:, 2] - psi_axis) ** 2)
         xpoint = xpoint[xpoint_ordering]
     # xpoint.sort(key=lambda x: (x[2] - psi_axis) ** 2)
     #
     return opoint, xpoint
 
+
 def discard_xpoints_f(opoint, xpt, f):
     # Here opoint and xpt are individual critical points
     Ro, Zo, Po = opoint  # The primary O-point
     result = False
-   
+
     # for xpt in xpoint:
     Rx, Zx, Px = xpt
 
@@ -455,8 +486,6 @@ def discard_xpoints_f(opoint, xpt, f):
             result = True
 
     return result
-
-
 
 
 def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
@@ -525,7 +554,11 @@ def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
         while True:
             mask[i, j] = 1  # Mark as in the core
 
-            if (i < nx - 1) and (psin[i + 1, j] < 1.0) and (mask[i + 1, j] < 0.5):
+            if (
+                (i < nx - 1)
+                and (psin[i + 1, j] < 1.0)
+                and (mask[i + 1, j] < 0.5)
+            ):
                 stack.append((i + 1, j))
             if (i > 0) and (psin[i - 1, j] < 1.0) and (mask[i - 1, j] < 0.5):
                 stack.append((i - 1, j))
@@ -547,12 +580,16 @@ def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
 
     return mask
 
+
 # def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None, old=False):
 #     if old: return core_mask_old(R, Z, psi, opoint, xpoint, psi_bndry)
 #     else: return inside_mask(R, Z, psi, opoint, xpoint, psi_bndry)
 
+
 @njit(fastmath=True, cache=True)
-def inside_mask(R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bndry=None):
+def inside_mask(
+    R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bndry=None
+):
     """
     Similar to core_mask_old above, except:
     (1) it's all stuff that can be JIT-compiled
@@ -580,10 +617,10 @@ def inside_mask(R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bnd
         ix = argmin(abs(R[:, 0] - rx))
         jx = argmin(abs(Z[0, :] - zx))
         xpt_inds.append((ix, jx))
-        # Fill this point and all around with '2'# 
-        ilo , ihi = min(max(ix-1,0),nx-1) , max(0,min(ix+1,nx-1))
-        jlo , jhi = min(max(jx-1,0),ny-1) , max(0,min(jx+1,ny-1))
-        mask[ilo:ihi+1,jlo:jhi+1] = 2
+        # Fill this point and all around with '2'#
+        ilo, ihi = min(max(ix - 1, 0), nx - 1), max(0, min(ix + 1, nx - 1))
+        jlo, jhi = min(max(jx - 1, 0), ny - 1), max(0, min(jx + 1, ny - 1))
+        mask[ilo : ihi + 1, jlo : jhi + 1] = 2
     #
     # Find nearest index to start
     rind = argmin(abs(R[:, 0] - Ro))
@@ -598,7 +635,7 @@ def inside_mask(R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bnd
         if (j > 0) and (psin[i, j - 1] < 1.0) and (mask[i, j - 1] < 0.5):
             stack.append((i, j - 1))
         # Check the point above
-        if (j < ny -1) and (psin[i, j + 1] < 1.0) and (mask[i, j + 1] < 0.5):
+        if (j < ny - 1) and (psin[i, j + 1] < 1.0) and (mask[i, j + 1] < 0.5):
             stack.append((i, j + 1))
         #
         # Scan along a row to the right
@@ -611,15 +648,20 @@ def inside_mask(R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bnd
     #
     # Now return to X-point locations
     for ix, jx in xpt_inds:
-         ilo , ihi = min(max(ix-1,0),nx-1) , max(0,min(ix+1,nx-1))
-         jlo , jhi = min(max(jx-1,0),ny-1) , max(0,min(jx+1,ny-1))
-         mask[ilo:ihi+1,jlo:jhi+1] = 1*(mask[ilo:ihi+1,jlo:jhi+1]==1)*(psin[ilo:ihi+1,jlo:jhi+1]<1.0)
+        ilo, ihi = min(max(ix - 1, 0), nx - 1), max(0, min(ix + 1, nx - 1))
+        jlo, jhi = min(max(jx - 1, 0), ny - 1), max(0, min(jx + 1, ny - 1))
+        mask[ilo : ihi + 1, jlo : jhi + 1] = (
+            1
+            * (mask[ilo : ihi + 1, jlo : jhi + 1] == 1)
+            * (psin[ilo : ihi + 1, jlo : jhi + 1] < 1.0)
+        )
     #
 
     # remove effect of mask_outside_limiter
-    mask = (mask==1)
+    mask = mask == 1
 
     return mask
+
 
 def find_psisurface(eq, psifunc, r0, z0, r1, z1, psival=1.0, n=100, axis=None):
     """
@@ -704,7 +746,9 @@ def find_separatrix(
 
     # Avoid putting theta grid points exactly on the X-points
     xpoint_theta = arctan2(xpoint[0][0] - r0, xpoint[0][1] - z0)
-    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (xpoint_theta + 2 * pi) * (
+    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (
+        xpoint_theta + 2 * pi
+    ) * (
         xpoint_theta < 0
     )  # let's make it between 0 and 2*pi
     # How close in theta to allow theta grid points to the X-point
@@ -732,7 +776,14 @@ def find_separatrix(
 
 
 def find_safety(
-    eq, npsi=1, psinorm=None, ntheta=128, psi=None, opoint=None, xpoint=None, axis=None
+    eq,
+    npsi=1,
+    psinorm=None,
+    ntheta=128,
+    psi=None,
+    opoint=None,
+    xpoint=None,
+    axis=None,
 ):
     """Find the safety factor for each value of psi
     Calculates equally spaced flux surfaces. Points on
@@ -761,7 +812,9 @@ def find_safety(
     else:
         psinormal = (psi - opoint[0][2]) / (xpoint[0][2] - opoint[0][2])
 
-    psifunc = interpolate.RectBivariateSpline(eq.R[:, 0], eq.Z[0, :], psinormal)
+    psifunc = interpolate.RectBivariateSpline(
+        eq.R[:, 0], eq.Z[0, :], psinormal
+    )
 
     r0, z0 = opoint[0][0:2]
 
@@ -770,7 +823,9 @@ def find_safety(
 
     # Avoid putting theta grid points exactly on the X-points
     xpoint_theta = arctan2(xpoint[0][0] - r0, xpoint[0][1] - z0)
-    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (xpoint_theta + 2 * pi) * (
+    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (
+        xpoint_theta + 2 * pi
+    ) * (
         xpoint_theta < 0
     )  # let's make it between 0 and 2*pi
     # How close in theta to allow theta grid points to the X-point
@@ -816,17 +871,17 @@ def find_safety(
     fpol = eq.fpol(psirange[:]).reshape(npsi, 1)
     Br = eq.Br(r, z)
     Bz = eq.Bz(r, z)
-    Bthe = sqrt(Br ** 2 + Bz ** 2)
+    Bthe = sqrt(Br**2 + Bz**2)
 
     # Differentiate location w.r.t. index
     dr_di = (np.roll(r, 1, axis=1) - np.roll(r, -1, axis=1)) / 2.0
     dz_di = (np.roll(z, 1, axis=1) - np.roll(z, -1, axis=1)) / 2.0
 
     # Distance between points
-    dl = sqrt(dr_di ** 2 + dz_di ** 2)
+    dl = sqrt(dr_di**2 + dz_di**2)
 
     # Integrand - Btor/(R*Bthe) = Fpol/(R**2*Bthe)
-    qint = fpol / (r ** 2 * Bthe)
+    qint = fpol / (r**2 * Bthe)
 
     # Integral
     q = sum(qint * dl, axis=1) / (2 * pi)

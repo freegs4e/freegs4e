@@ -19,6 +19,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 import numpy as np
 
 from ._fileutils import ChunkOutput, write_1d, write_2d

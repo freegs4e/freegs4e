@@ -21,13 +21,12 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from . import optimiser
-from . import picard
+from math import sqrt
 
 import matplotlib.pyplot as plt
 from freegs.plotting import plotEquilibrium
 
-from math import sqrt
+from . import optimiser, picard
 
 # Measures which operate on Equilibrium objects
 
@@ -42,7 +41,9 @@ def max_abs_coil_current(eq):
 
 def max_coil_force(eq):
     forces = eq.tokamak.getForces()  # dictionary
-    return max(sqrt(force[0] ** 2 + force[1] ** 2) for force in forces.values())
+    return max(
+        sqrt(force[0] ** 2 + force[1] ** 2) for force in forces.values()
+    )
 
 
 def no_wall_intersection(eq):
@@ -132,6 +133,7 @@ class CoilHeight:
 
 # Monitor optimisation solutions
 
+
 # Plot and save the best equilibrium each generation
 class PlotMonitor:
     """
@@ -149,12 +151,16 @@ class PlotMonitor:
         # Update the canvas and pause
         # Note, a short pause is needed to force drawing update
         self.fig.canvas.draw()
-        self.axis.set_title("Generation: {} Score: {}".format(generation, best[0]))
+        self.axis.set_title(
+            "Generation: {} Score: {}".format(generation, best[0])
+        )
         self.fig.savefig("generation_{}.pdf".format(generation))
         plt.pause(0.5)
 
 
-def optimise(eq, controls, measure, maxgen=10, N=10, CR=0.3, F=1.0, monitor=None):
+def optimise(
+    eq, controls, measure, maxgen=10, N=10, CR=0.3, F=1.0, monitor=None
+):
     """Use Differential Evolution to optimise an Equilibrium
     https://en.wikipedia.org/wiki/Differential_evolution
 
@@ -203,5 +209,12 @@ def optimise(eq, controls, measure, maxgen=10, N=10, CR=0.3, F=1.0, monitor=None
 
     # Call the generic optimiser,
     return optimiser.optimise(
-        eq, controls, solve_and_measure, maxgen=maxgen, N=N, CR=CR, F=F, monitor=monitor
+        eq,
+        controls,
+        solve_and_measure,
+        maxgen=maxgen,
+        N=N,
+        CR=CR,
+        F=F,
+        monitor=monitor,
     )

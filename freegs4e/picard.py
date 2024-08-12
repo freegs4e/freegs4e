@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from numpy import amin, amax, array
+from numpy import amax, amin, array
 
 
 def solve(
@@ -62,6 +62,7 @@ def solve(
 
     if show:
         import matplotlib.pyplot as plt
+
         from .plotting import plotEquilibrium
 
         if pause > 0.0 and axis is None:
@@ -128,11 +129,8 @@ def solve(
             raise RuntimeError(
                 "Picard iteration failed to converge (too many iterations)"
             )
-        
+
         eq._profiles = profiles
-        
 
-    if convergenceInfo: 
-        return array(psi_maxchange_iterations),\
-               array(psi_relchange_iterations)
-
+    if convergenceInfo:
+        return array(psi_maxchange_iterations), array(psi_relchange_iterations)

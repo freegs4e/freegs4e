@@ -24,11 +24,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .gradshafranov import Greens, GreensBr, GreensBz, mu0
-import numpy as np
 import numbers
-from matplotlib.patches import Rectangle
+
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.patches import Rectangle
+
+from .gradshafranov import Greens, GreensBr, GreensBz, mu0
+
 
 class AreaCurrentLimit:
     """
@@ -205,7 +208,7 @@ class Coil:
         # Force per unit length.
         # In cgs units f = I^2/(c^2 * R) * (ln(8*R/a) - 1 + xi/2)
         # In SI units f = mu0 * I^2 / (4*pi*R) * (ln(8*R/a) - 1 + xi/2)
-        self_fr = (mu0 * total_current ** 2 / (4.0 * np.pi * self.R)) * (
+        self_fr = (mu0 * total_current**2 / (4.0 * np.pi * self.R)) * (
             np.log(8.0 * self.R / minor_radius) - 1 + self_inductance / 2.0
         )
 
@@ -240,7 +243,8 @@ class Coil:
         Helper method for writing output
         """
         return np.array(
-            (self.R, self.Z, self.current, self.turns, self.control), dtype=self.dtype
+            (self.R, self.Z, self.current, self.turns, self.control),
+            dtype=self.dtype,
         )
 
     @classmethod
@@ -276,7 +280,7 @@ class Coil:
 
         The area of the coil is used to set the radius
         """
-        
+
         try:
             axis = self.plot_nke(axis, show)
         except:
@@ -286,7 +290,6 @@ class Coil:
                 axis = fig.add_subplot(111)
 
             minor_radius = np.sqrt(self.area / np.pi)
-
 
             circle = plt.Circle((self.R, self.Z), minor_radius, color="b")
             axis.add_artist(circle)
@@ -298,11 +301,12 @@ class Coil:
         Plot the coil location, using axis if given
 
         """
-        self.rectangle = Rectangle((self.R - self.dR/2,
-                                    self.Z - self.dZ/2),
-                                    width=self.dR,
-                                    height=self.dZ, 
-                                    facecolor = 'b')
+        self.rectangle = Rectangle(
+            (self.R - self.dR / 2, self.Z - self.dZ / 2),
+            width=self.dR,
+            height=self.dZ,
+            facecolor="b",
+        )
 
         if axis is None:
             fig = plt.figure()
@@ -310,4 +314,3 @@ class Coil:
 
         axis.add_patch(self.rectangle)
         return axis
-
