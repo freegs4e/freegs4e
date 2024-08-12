@@ -55,6 +55,23 @@ are fixed. The plasma pressure on axis and plasma current are fixed.
 This demonstrates the coil current control code, finding X-points, and marking core region
 These routines are used inside the free boundary solver
 
+Contributing
+------------
+
+To install FreeGS4E for development, clone the repository and install the package in editable mode with the development dependencies:
+
+```bash
+git clone https://github.com/freegs4e/freegs4e
+cd freegs4e
+pip install -e ".[dev]"
+```
+
+Pre-commit hooks are used to ensure code quality. To install the pre-commit hooks, run:
+
+```bash
+pre-commit install
+```
+
 License
 -------
 
