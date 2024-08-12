@@ -210,7 +210,7 @@ class ConstrainBetapIp(Profile):
         self.alpha_n = alpha_n
         self.Raxis = Raxis
 
-        # parameter to indicate that this is coming from FreeGSFast
+        # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
 
     # def Jtor(self, R, Z, psi, psi_bndry=None):
@@ -547,7 +547,7 @@ class ConstrainPaxisIp(Profile):
         self.alpha_n = alpha_n
         self.Raxis = Raxis
 
-        # parameter to indicate that this is coming from FreeGSFast
+        # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
         
     # def Jtor(self, R, Z, psi, psi_bndry=None):
@@ -876,7 +876,7 @@ class Fiesta_Topeol(Profile):
         self.alpha_n = alpha_n
         self.Raxis = Raxis
 
-        # parameter to indicate that this is coming from FreeGSFast
+        # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
 
 
@@ -1079,7 +1079,7 @@ class Lao85(Profile):
         self._fvac = fvac
         self.Raxis = Raxis
 
-        # parameter to indicate that this is coming from FreeGSFast
+        # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
         
    
