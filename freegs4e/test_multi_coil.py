@@ -1,8 +1,8 @@
-from .multi_coil import MultiCoil
+import numpy as np
+
 from .coil import Coil
 from .machine import Circuit
-
-import numpy as np
+from .multi_coil import MultiCoil
 
 
 def test_single():
@@ -66,7 +66,9 @@ def test_move_R():
 
     dR = 0.6
     coil1 = MultiCoil([1.1, 0.2], [1.2, -0.3], current=100.0, mirror=False)
-    coil2 = MultiCoil([1.1 + dR, 0.2 + dR], [1.2, -0.3], current=100.0, mirror=False)
+    coil2 = MultiCoil(
+        [1.1 + dR, 0.2 + dR], [1.2, -0.3], current=100.0, mirror=False
+    )
 
     # Shift coil1 to same location as coil2
     coil1.R += dR
@@ -85,7 +87,9 @@ def test_move_Z():
 
     dZ = 0.4
     coil1 = MultiCoil([1.1, 0.2], [1.2, -0.3], current=100.0, mirror=False)
-    coil2 = MultiCoil([1.1, 0.2], [1.2 + dZ, -0.3 + dZ], current=100.0, mirror=False)
+    coil2 = MultiCoil(
+        [1.1, 0.2], [1.2 + dZ, -0.3 + dZ], current=100.0, mirror=False
+    )
 
     # Shift coil1 to same location as coil2
     coil1.Z += dZ

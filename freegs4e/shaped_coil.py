@@ -23,13 +23,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from . import quadrature
-from . import polygons
-from .gradshafranov import Greens, GreensBr, GreensBz
-
 import numpy as np
 
+from . import polygons, quadrature
 from .coil import Coil
+from .gradshafranov import Greens, GreensBr, GreensBz
 
 
 class ShapedCoil(Coil):
@@ -118,8 +116,10 @@ class ShapedCoil(Coil):
         return result
 
     def __repr__(self):
-        return "ShapedCoil({0}, current={1:.1f}, turns={2}, control={3})".format(
-            self.shape, self.current, self.turns, self.control
+        return (
+            "ShapedCoil({0}, current={1:.1f}, turns={2}, control={3})".format(
+                self.shape, self.current, self.turns, self.control
+            )
         )
 
     @property

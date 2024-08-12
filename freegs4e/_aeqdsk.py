@@ -4,9 +4,9 @@ fields - Lists the variables stored in the file, a default value, and a descript
 
 """
 
-from . import _fileutils as fu
-
 import warnings
+
+from . import _fileutils as fu
 
 # List of file data variables, default values, and documentation
 # This is used in both reader and writer
@@ -46,7 +46,11 @@ fields = [
     ("otop", 10.0, "plasma top gap in cm"),
     ("obott", 10.0, "plasma bottom gap in cm"),
     ("qpsib", 5.0, "q at 95% of poloidal flux"),
-    ("vertn", 1.0, "vacuum field (index? -- seems to be float) at current centroid"),
+    (
+        "vertn",
+        1.0,
+        "vacuum field (index? -- seems to be float) at current centroid",
+    ),
     # fmt_1040 = r '^\s*' + 4 * r '([\s\-]\d+\.\d+[Ee][\+\-]\d\d)'
     # read(neqdsk, 1040)(rco2v(k, jj), k = 1, mco2v)
     (None, None, None),  # New line
@@ -185,8 +189,16 @@ fields = [
     ("rvsout", 0.0, "major radius of vessel outer hit spot in cm"),
     ("zvsout", 0.0, "Z of vessel outer hit spot in cm"),
     ("vsurfa", 0.0, "plasma surface loop voltage in volt, E EQDSK only"),
-    ("wpdot", 0.0, "time derivative of plasma stored energy in Watt, E EQDSK only"),
-    ("wbdot", 0.0, "time derivative of poloidal magnetic energy in Watt, E EQDSK only"),
+    (
+        "wpdot",
+        0.0,
+        "time derivative of plasma stored energy in Watt, E EQDSK only",
+    ),
+    (
+        "wbdot",
+        0.0,
+        "time derivative of poloidal magnetic energy in Watt, E EQDSK only",
+    ),
     ("slantu", 0.0, ""),
     ("slantl", 0.0, ""),
     ("zuperts", 0.0, ""),
@@ -214,7 +226,11 @@ fields = [
         "radial distance in cm between x point and external field line at ZNOSE",
     ),
     ("ssi95", 0.0, "magnetic shear at 95% of normalized poloidal flux"),
-    ("rqqmin", 0.0, "normalized radius of qmin , square root of normalized volume"),
+    (
+        "rqqmin",
+        0.0,
+        "normalized radius of qmin , square root of normalized volume",
+    ),
     ("cjor99", 0.0, ""),
     (
         "cj1ave",
@@ -322,7 +338,9 @@ def read(fh):
             value = next(values)
             if isinstance(default, int) and not isinstance(value, int):
                 # Expecting an integer, but didn't get one
-                warnings.warn("Expecting an integer for '" + key + "' in aeqdsk file")
+                warnings.warn(
+                    "Expecting an integer for '" + key + "' in aeqdsk file"
+                )
                 break
             data[key] = value
 

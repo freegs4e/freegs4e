@@ -18,24 +18,30 @@ def test_integral():
     y0, y1 = -0.2, 3.1
 
     def func(x, y):
-        return x ** 2 - y ** 3 + x * y
+        return x**2 - y**3 + x * y
 
     exact_integral = (
-        (x1 ** 3 - x0 ** 3) * (y1 - y0) / 3
-        - (y1 ** 4 - y0 ** 4) * (x1 - x0) / 4
-        + (x1 ** 2 - x0 ** 2) * (y1 ** 2 - y0 ** 2) / 4
+        (x1**3 - x0**3) * (y1 - y0) / 3
+        - (y1**4 - y0**4) * (x1 - x0) / 4
+        + (x1**2 - x0**2) * (y1**2 - y0**2) / 4
     )
 
     # A 1st order method can't integrate this polynomial exactly
-    quad1 = quadrature.polygon_quad([(x0, y0), (x0, y1), (x1, y1), (x1, y0)], n=1)
+    quad1 = quadrature.polygon_quad(
+        [(x0, y0), (x0, y1), (x1, y1), (x1, y0)], n=1
+    )
     assert not np.isclose(
-        quadrature.average(func, quad1), exact_integral / ((x1 - x0) * (y1 - y0))
+        quadrature.average(func, quad1),
+        exact_integral / ((x1 - x0) * (y1 - y0)),
     )
 
     for n in [3, 6]:
         # Higher order methods can
-        quad1 = quadrature.polygon_quad([(x0, y0), (x0, y1), (x1, y1), (x1, y0)], n=n)
+        quad1 = quadrature.polygon_quad(
+            [(x0, y0), (x0, y1), (x1, y1), (x1, y0)], n=n
+        )
         assert len(quad1) == 2 * n
         assert np.isclose(
-            quadrature.average(func, quad1), exact_integral / ((x1 - x0) * (y1 - y0))
+            quadrature.average(func, quad1),
+            exact_integral / ((x1 - x0) * (y1 - y0)),
         )

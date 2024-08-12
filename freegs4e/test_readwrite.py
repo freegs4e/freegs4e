@@ -1,13 +1,17 @@
-import freegs4e
-
 import io
+
 from numpy import allclose
+
+import freegs4e
 
 
 def test_readwrite():
     """Test reading/writing to a file round-trip"""
 
-    for tokamak in [freegs4e.machine.TestTokamak(), freegs4e.machine.MAST_sym()]:
+    for tokamak in [
+        freegs4e.machine.TestTokamak(),
+        freegs4e.machine.MAST_sym(),
+    ]:
 
         eq = freegs4e.Equilibrium(
             tokamak=tokamak,
@@ -26,9 +30,13 @@ def test_readwrite():
         # X-points are on different flux surfaces.
         xpoints = [(1.1, -0.6), (1.1, 0.8)]
         isoflux = [(1.1, -0.6, 1.1, 0.6)]
-        constrain = freegs4e.control.constrain(xpoints=xpoints, isoflux=isoflux)
+        constrain = freegs4e.control.constrain(
+            xpoints=xpoints, isoflux=isoflux
+        )
 
-        freegs4e.solve(eq, profiles, constrain, maxits=25, atol=1e-3, rtol=1e-1)
+        freegs4e.solve(
+            eq, profiles, constrain, maxits=25, atol=1e-3, rtol=1e-1
+        )
 
         memory_file = io.BytesIO()
 
