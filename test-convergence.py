@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import freegs4e
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
+import freegs4e
 
 start_resolution = 17
 nrefinements = 5  # Number of refinements. Minimum 2
@@ -129,9 +130,13 @@ def plot_convergence(axis, title, values=None, diffs=None):
     axis.set_xticks([], minor=True)
 
 
-plot_convergence(axes[0, 0], r"Change in $\psi$ at {}".format(location), values=psivals)
+plot_convergence(
+    axes[0, 0], r"Change in $\psi$ at {}".format(location), values=psivals
+)
 plot_convergence(axes[0, 1], r"$\psi$ difference $l_2$ norm", diffs=l2vals)
-plot_convergence(axes[0, 2], r"$\psi$ difference $l_\infty$ norm", diffs=linfvals)
+plot_convergence(
+    axes[0, 2], r"$\psi$ difference $l_\infty$ norm", diffs=linfvals
+)
 plot_convergence(axes[1, 0], "Br at {}".format(location), values=brvals)
 plot_convergence(axes[1, 1], "Plasma volume", values=volumevals)
 plot_convergence(axes[1, 2], "P1L coil current", values=coilcurrents)

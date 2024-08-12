@@ -20,14 +20,11 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from numpy import zeros
+from numpy import clip, pi, sqrt, zeros
+from scipy.sparse import eye, lil_matrix
 
 # Elliptic integrals of first and second kind (K and E)
-from scipy.special import ellipk, ellipe
-
-from numpy import sqrt, pi, clip
-
-from scipy.sparse import lil_matrix, eye
+from scipy.special import ellipe, ellipk
 
 # Physical constants
 mu0 = 4e-7 * pi
@@ -71,8 +68,8 @@ class GSElliptic:
 
         b = zeros([nx, ny])
 
-        invdR2 = 1.0 / dR ** 2
-        invdZ2 = 1.0 / dZ ** 2
+        invdR2 = 1.0 / dR**2
+        invdZ2 = 1.0 / dZ**2
 
         for x in range(1, nx - 1):
             R = self.Rmin + dR * x  # Major radius of this point
@@ -92,7 +89,7 @@ class GSElliptic:
         Return the diagonal elements
 
         """
-        return -2.0 / dR ** 2 - 2.0 / dZ ** 2
+        return -2.0 / dR**2 - 2.0 / dZ**2
 
 
 class GSsparse:
@@ -122,8 +119,8 @@ class GSsparse:
         # Create a linked list sparse matrix
         A = eye(N, format="lil")
 
-        invdR2 = 1.0 / dR ** 2
-        invdZ2 = 1.0 / dZ ** 2
+        invdR2 = 1.0 / dR**2
+        invdZ2 = 1.0 / dZ**2
 
         for x in range(1, nx - 1):
             R = self.Rmin + dR * x  # Major radius of this point
@@ -159,7 +156,12 @@ class GSsparse4thOrder:
     # Coefficients for first derivatives
     # (index offset, weight)
 
-    centred_1st = [(-2, 1.0 / 12), (-1, -8.0 / 12), (1, 8.0 / 12), (2, -1.0 / 12)]
+    centred_1st = [
+        (-2, 1.0 / 12),
+        (-1, -8.0 / 12),
+        (1, 8.0 / 12),
+        (2, -1.0 / 12),
+    ]
 
     offset_1st = [
         (-1, -3.0 / 12),
@@ -210,8 +212,8 @@ class GSsparse4thOrder:
         # Create a linked list sparse matrix
         A = lil_matrix((N, N))
 
-        invdR2 = 1.0 / dR ** 2
-        invdZ2 = 1.0 / dZ ** 2
+        invdR2 = 1.0 / dR**2
+        invdZ2 = 1.0 / dZ**2
 
         for x in range(1, nx - 1):
             R = self.Rmin + dR * x  # Major radius of this point
@@ -300,7 +302,9 @@ def GreensBz(Rc, Zc, R, Z, eps=1e-3):
     Bz = (1/R) d psi/dR
     """
 
-    return (Greens(Rc, Zc, R + eps, Z) - Greens(Rc, Zc, R - eps, Z)) / (2.0 * eps * R)
+    return (Greens(Rc, Zc, R + eps, Z) - Greens(Rc, Zc, R - eps, Z)) / (
+        2.0 * eps * R
+    )
 
 
 def GreensBr(Rc, Zc, R, Z, eps=1e-3):
@@ -311,4 +315,6 @@ def GreensBr(Rc, Zc, R, Z, eps=1e-3):
     Br = -(1/R) d psi/dZ
     """
 
-    return (Greens(Rc, Zc, R, Z - eps) - Greens(Rc, Zc, R, Z + eps)) / (2.0 * eps * R)
+    return (Greens(Rc, Zc, R, Z - eps) - Greens(Rc, Zc, R, Z + eps)) / (
+        2.0 * eps * R
+    )

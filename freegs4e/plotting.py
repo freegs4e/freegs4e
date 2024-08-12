@@ -18,7 +18,8 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from numpy import linspace, amin, amax
+from numpy import amax, amin, linspace
+
 from . import critical
 
 
@@ -68,7 +69,9 @@ def plotConstraints(control, axis=None, show=True):
     return axis
 
 
-def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=True):
+def plotEquilibrium(
+    eq, axis=None, show=True, oxpoints=True, wall=True, limiter=True
+):
     """
     Plot the equilibrium flux surfaces
 
@@ -96,13 +99,13 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
 
     try:
         eq._profiles
-            
+
         if oxpoints:
             # Add O- and X-points
             # opt, xpt = critical.find_critical(eq.R, eq.Z, psi)
             opt = eq._profiles.opt
             xpt = eq._profiles.xpt
-            
+
             for r, z, _ in xpt:
                 axis.plot(r, z, "ro")
             for r, z, _ in opt:
@@ -112,16 +115,31 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
                 psi_bndry = xpt[0][2]
                 if eq._profiles.flag_limiter:
                     # axis.contour(eq.R, eq.Z, psi, levels=[eq._profiles.psi_bndry], colors="k")
-                    axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r", linestyles = 'dashed')
-                    cs = plt.contour(eq.R, eq.Z, psi, levels=[eq._profiles.psi_bndry], alpha=0)
+                    axis.contour(
+                        eq.R,
+                        eq.Z,
+                        psi,
+                        levels=[psi_bndry],
+                        colors="r",
+                        linestyles="dashed",
+                    )
+                    cs = plt.contour(
+                        eq.R,
+                        eq.Z,
+                        psi,
+                        levels=[eq._profiles.psi_bndry],
+                        alpha=0,
+                    )
                     paths = cs.collections[0].get_paths()
                     for path in paths:
                         vertices = path.vertices
-                        if np.sum(vertices[0] == vertices[-1])>1:
-                            axis.plot(vertices[:,0], vertices[:,1], 'k')
+                        if np.sum(vertices[0] == vertices[-1]) > 1:
+                            axis.plot(vertices[:, 0], vertices[:, 1], "k")
 
                 else:
-                    axis.contour(eq.R, eq.Z, psi, levels=[psi_bndry], colors="r")
+                    axis.contour(
+                        eq.R, eq.Z, psi, levels=[psi_bndry], colors="r"
+                    )
 
                 # Add legend
                 axis.plot([], [], "ro", label="X-points")
@@ -130,9 +148,10 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
                 axis.plot([], [], "go", label="O-points")
 
     except:
-        print('This equilibrium has not been solved: the separatrix can not be drawn.')
-        print('Please solve first for a plot of the critical points.')
-            
+        print(
+            "This equilibrium has not been solved: the separatrix can not be drawn."
+        )
+        print("Please solve first for a plot of the critical points.")
 
     if wall and eq.tokamak.wall and len(eq.tokamak.wall.R):
         axis.plot(
@@ -144,7 +163,8 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
         axis.plot(
             list(eq.tokamak.limiter.R) + [eq.tokamak.limiter.R[0]],
             list(eq.tokamak.limiter.Z) + [eq.tokamak.limiter.Z[0]],
-            "k--",lw=.5
+            "k--",
+            lw=0.5,
         )
 
     if show:
@@ -154,8 +174,8 @@ def plotEquilibrium(eq, axis=None, show=True, oxpoints=True, wall=True, limiter=
     return axis
 
 
-
 import numpy as np
+
 
 def make_broad_mask(mask, layer_size=1):
     """Enlarges a mask with the points just outside the input, with a width=`layer_size`
@@ -171,11 +191,15 @@ def make_broad_mask(mask, layer_size=1):
         Mask of the points outside the limiter within a distance of `layer_size` from the limiter
     """
     nx, ny = np.shape(mask)
-    layer_mask = np.zeros(np.array([nx, ny]) + 2 * np.array([layer_size, layer_size]))
+    layer_mask = np.zeros(
+        np.array([nx, ny]) + 2 * np.array([layer_size, layer_size])
+    )
 
     for i in np.arange(-layer_size, layer_size + 1) + layer_size:
         for j in np.arange(-layer_size, layer_size + 1) + layer_size:
             layer_mask[i : i + nx, j : j + ny] += mask
-    layer_mask = layer_mask[layer_size : layer_size + nx, layer_size : layer_size + ny]
+    layer_mask = layer_mask[
+        layer_size : layer_size + nx, layer_size : layer_size + ny
+    ]
     layer_mask = (layer_mask > 0).astype(bool)
     return layer_mask

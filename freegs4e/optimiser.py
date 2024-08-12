@@ -24,9 +24,9 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import random
-import copy
 import bisect
+import copy
+import random
 
 
 def mutate(obj, controls):
@@ -66,7 +66,9 @@ def pickUnique(N, m, e):
     return others
 
 
-def optimise(obj, controls, measure, maxgen=10, N=10, CR=0.3, F=1.0, monitor=None):
+def optimise(
+    obj, controls, measure, maxgen=10, N=10, CR=0.3, F=1.0, monitor=None
+):
     """Use Differential Evolution to optimise an object
     https://en.wikipedia.org/wiki/Differential_evolution
 
@@ -119,13 +121,16 @@ def optimise(obj, controls, measure, maxgen=10, N=10, CR=0.3, F=1.0, monitor=Non
             others = [population[index][1] for index in pickUnique(N, 3, [ai])]
 
             new_obj = copy.deepcopy(agent[1])
-            R = random.randint(0, len(controls) - 1)  # Pick a random control to modify
+            R = random.randint(
+                0, len(controls) - 1
+            )  # Pick a random control to modify
             for i, control in enumerate(controls):
                 if i == R or random.random() < CR:
                     control.set(
                         new_obj,
                         control.get(others[0])
-                        + F * (control.get(others[1]) - control.get(others[2])),
+                        + F
+                        * (control.get(others[1]) - control.get(others[2])),
                     )
             score = measure(new_obj)
             if score < agent[0]:

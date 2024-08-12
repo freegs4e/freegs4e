@@ -20,23 +20,17 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from numpy import pi, meshgrid, linspace, exp, array
 import numpy as np
+from numpy import array, exp, linspace, meshgrid, pi
 from scipy import interpolate
 from scipy.integrate import romb  # Romberg integration
 
+# Multigrid solver
+from . import critical, machine, multigrid, polygons
 from .boundary import fixedBoundary, freeBoundary
-from . import critical
-
-from . import polygons
 
 # Operators which define the G-S equation
-from .gradshafranov import mu0, GSsparse, GSsparse4thOrder
-
-# Multigrid solver
-from . import multigrid
-
-from . import machine
+from .gradshafranov import GSsparse, GSsparse4thOrder, mu0
 
 
 class Equilibrium:
@@ -132,7 +126,9 @@ class Equilibrium:
             generator = GSsparse4thOrder(Rmin, Rmax, Zmin, Zmax)
         else:
             raise ValueError(
-                "Invalid choice of order ({}). Valid values are 2 or 4.".format(order)
+                "Invalid choice of order ({}). Valid values are 2 or 4.".format(
+                    order
+                )
             )
         self.order = order
 
@@ -140,11 +136,14 @@ class Equilibrium:
             nx, ny, generator, nlevels=1, ncycle=1, niter=2, direct=True
         )
 
-    def create_psi_plasma_default(self, ):
-        """Creates a Gaussian starting guess for plasma_psi
-            """
-        nx,ny = np.shape(self.R)
-        xx, yy = meshgrid(linspace(0, 1, nx), linspace(0, 1, ny), indexing="ij")
+    def create_psi_plasma_default(
+        self,
+    ):
+        """Creates a Gaussian starting guess for plasma_psi"""
+        nx, ny = np.shape(self.R)
+        xx, yy = meshgrid(
+            linspace(0, 1, nx), linspace(0, 1, ny), indexing="ij"
+        )
         psi = exp(-((xx - 0.35) ** 2 + (yy - 0.5) ** 2))
 
         psi[0, :] = 0.0
@@ -225,7 +224,9 @@ class Equilibrium:
         dZ = self.Z[0, 1] - self.Z[0, 0]
 
         # Normalised psi
-        psi_norm = (self.psi() - self.psi_axis) / (self.psi_bndry - self.psi_axis)
+        psi_norm = (self.psi() - self.psi_axis) / (
+            self.psi_bndry - self.psi_axis
+        )
 
         # Plasma pressure
         pressure = self.pressure(psi_norm)
@@ -288,7 +289,9 @@ class Equilibrium:
         Toroidal magnetic field
         """
         # Normalised psi
-        psi_norm = (self.psiRZ(R, Z) - self.psi_axis) / (self.psi_bndry - self.psi_axis)
+        psi_norm = (self.psiRZ(R, Z) - self.psi_axis) / (
+            self.psi_bndry - self.psi_axis
+        )
 
         # Get f = R * Btor in the core. May be invalid outside the core
         fpol = self.fpol(psi_norm)
@@ -378,9 +381,9 @@ class Equilibrium:
         Returns an array of ntheta (R, Z) coordinates of the separatrix,
         equally spaced in geometric poloidal angle.
         """
-        return array(critical.find_separatrix(self, ntheta=ntheta, psi=self.psi()))[
-            :, 0:2
-        ]
+        return array(
+            critical.find_separatrix(self, ntheta=ntheta, psi=self.psi())
+        )[:, 0:2]
 
     def solve(self, profiles, Jtor=None, psi=None, psi_bndry=None):
         """
@@ -462,9 +465,11 @@ class Equilibrium:
         # if opt:
         self.psi_axis = opt[0][2]
 
-        if len(xpt)>0:
+        if len(xpt) > 0:
             self.psi_bndry = xpt[0][2]
-            self.mask = critical.inside_mask(self.R, self.Z, psi, opt, xpt, self.mask_outside_limiter)
+            self.mask = critical.inside_mask(
+                self.R, self.Z, psi, opt, xpt, self.mask_outside_limiter
+            )
 
             # Use interpolation to find if a point is in the core.
             self.mask_func = interpolate.RectBivariateSpline(
@@ -554,8 +559,10 @@ class Equilibrium:
             # Separatrix should now be between Rindex_inner and Rindex_inner+1
             # Linear interpolation
             R_sep_in = (
-                self.R[Rindex_inner, Zindex] * (1.0 - psinorm[Rindex_inner + 1])
-                + self.R[Rindex_inner + 1, Zindex] * (psinorm[Rindex_inner] - 1.0)
+                self.R[Rindex_inner, Zindex]
+                * (1.0 - psinorm[Rindex_inner + 1])
+                + self.R[Rindex_inner + 1, Zindex]
+                * (psinorm[Rindex_inner] - 1.0)
             ) / (psinorm[Rindex_inner] - psinorm[Rindex_inner + 1])
 
         # Outer separatrix
@@ -569,8 +576,10 @@ class Equilibrium:
 
             # Separatrix should now be between Rindex_outer-1 and Rindex_outer
             R_sep_out = (
-                self.R[Rindex_outer, Zindex] * (1.0 - psinorm[Rindex_outer - 1])
-                + self.R[Rindex_outer - 1, Zindex] * (psinorm[Rindex_outer] - 1.0)
+                self.R[Rindex_outer, Zindex]
+                * (1.0 - psinorm[Rindex_outer - 1])
+                + self.R[Rindex_outer - 1, Zindex]
+                * (psinorm[Rindex_outer] - 1.0)
             ) / (psinorm[Rindex_outer] - psinorm[Rindex_outer - 1])
 
         return R_sep_in, R_sep_out
@@ -582,7 +591,9 @@ class Equilibrium:
         separatrix = self.separatrix()  # Array [:,2]
         wall = self.tokamak.wall  # Wall object with R and Z members (lists)
 
-        return polygons.intersect(separatrix[:, 0], separatrix[:, 1], wall.R, wall.Z)
+        return polygons.intersect(
+            separatrix[:, 0], separatrix[:, 1], wall.R, wall.Z
+        )
 
     def magneticAxis(self):
         """Returns the location of the magnetic axis as a list [R,Z,psi]"""
@@ -637,7 +648,9 @@ class Equilibrium:
 
     def aspectRatio(self, npoints=20):
         """Calculates the plasma aspect ratio"""
-        return self.Rgeometric(npoints=npoints) / self.minorRadius(npoints=npoints)
+        return self.Rgeometric(npoints=npoints) / self.minorRadius(
+            npoints=npoints
+        )
 
     def effectiveElongation(self, R_wall_inner, R_wall_outer, npoints=300):
         """Calculates plasma effective elongation using the plasma volume"""
@@ -732,7 +745,9 @@ class Equilibrium:
         dV = 2.0 * np.pi * R * dR * dZ
 
         # Normalised psi
-        psi_norm = (self.psi() - self.psi_axis) / (self.psi_bndry - self.psi_axis)
+        psi_norm = (self.psi() - self.psi_axis) / (
+            self.psi_bndry - self.psi_axis
+        )
 
         # Plasma pressure
         pressure = self.pressure(psi_norm)
@@ -761,7 +776,9 @@ class Equilibrium:
         dV = 2.0 * np.pi * R * dR * dZ
 
         # Normalised psi
-        psi_norm = (self.psi() - self.psi_axis) / (self.psi_bndry - self.psi_axis)
+        psi_norm = (self.psi() - self.psi_axis) / (
+            self.psi_bndry - self.psi_axis
+        )
 
         # Plasma pressure
         pressure = self.pressure(psi_norm)
@@ -779,7 +796,9 @@ class Equilibrium:
 
     def totalBeta(self):
         """Calculate plasma total beta"""
-        return 1.0 / ((1.0 / self.poloidalBeta2()) + (1.0 / self.toroidalBeta()))
+        return 1.0 / (
+            (1.0 / self.poloidalBeta2()) + (1.0 / self.toroidalBeta())
+        )
 
 
 def refine(eq, nx=None, ny=None):
@@ -851,7 +870,9 @@ def coarsen(eq):
     return result
 
 
-def newDomain(eq, Rmin=None, Rmax=None, Zmin=None, Zmax=None, nx=None, ny=None):
+def newDomain(
+    eq, Rmin=None, Rmax=None, Zmin=None, Zmax=None, nx=None, ny=None
+):
     """Creates a new Equilibrium, solving in a different domain.
     The domain size (Rmin, Rmax, Zmin, Zmax) and resolution (nx,ny)
     are taken from the input equilibrium eq if not specified.
@@ -871,7 +892,13 @@ def newDomain(eq, Rmin=None, Rmax=None, Zmin=None, Zmax=None, nx=None, ny=None):
 
     # Create a new equilibrium with the new domain
     result = Equilibrium(
-        tokamak=eq.tokamak, Rmin=Rmin, Rmax=Rmax, Zmin=Zmin, Zmax=Zmax, nx=nx, ny=ny
+        tokamak=eq.tokamak,
+        Rmin=Rmin,
+        Rmax=Rmax,
+        Zmin=Zmin,
+        Zmax=Zmax,
+        nx=nx,
+        ny=ny,
     )
 
     # Calculate the current on the old grid
@@ -908,10 +935,9 @@ if __name__ == "__main__":
 
     # Test the different spline interpolation routines
 
-    from numpy import ravel
-    import matplotlib.pyplot as plt
-
     import machine
+    import matplotlib.pyplot as plt
+    from numpy import ravel
 
     tokamak = machine.TestTokamak()
 

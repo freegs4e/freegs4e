@@ -1,29 +1,29 @@
 # Read MAST-U GEQDSK file, calculate connection length
 
-from freegs4e import geqdsk
-from freegs4e import machine
+from freegs4e import geqdsk, machine
 
 tokamak = machine.MASTU()
 
 with open("mast-upgrade.geqdsk") as f:
     eq = geqdsk.read(f, tokamak, show=False)
 
-from freegs4e import fieldtracer
 import matplotlib.pyplot as plt
+
+from freegs4e import fieldtracer
 
 # Plot equilibrium
 axis = eq.plot(show=False)
 
 # Trace field lines both directions along the magnetic field
-# By passing axis 
+# By passing axis
 forward, backward = fieldtracer.traceFieldLines(eq, axis=axis, nturns=50)
 
 plt.savefig("mast-upgrade-fieldtrace.pdf")
 plt.show()
 
 # Plot field line length from midplane to target
-plt.plot(forward.R[0,:], forward.length[-1,:], label="Forward")
-plt.plot(backward.R[0,:], backward.length[-1,:], label="Backward")
+plt.plot(forward.R[0, :], forward.length[-1, :], label="Forward")
+plt.plot(backward.R[0, :], backward.length[-1, :], label="Backward")
 plt.legend()
 plt.xlabel("Starting major radius [m]")
 plt.ylabel("Parallel connection length [m]")

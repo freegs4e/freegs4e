@@ -45,7 +45,9 @@ def innerOuterSeparatrix(eq, profiles, Z=0.0):
     Zindex = np.argmin(abs(eq.Z[0, :] - Z))
 
     # Normalise psi at this Z index
-    psinorm = (eq.psi()[:, Zindex] - eq.psi_axis) / (eq.psi_bndry - eq.psi_axis)
+    psinorm = (eq.psi()[:, Zindex] - eq.psi_axis) / (
+        eq.psi_bndry - eq.psi_axis
+    )
 
     # Start from the magnetic axis
     Rindex_axis = np.argmin(abs(eq.R[:, 0] - profiles.opt[0][0]))
@@ -164,7 +166,9 @@ def Separatrix(eq, profiles, ntheta, psival=1.0):
 
     # Avoid putting theta grid points exactly on the X-points
     xpoint_theta = arctan2(xpoint[0][0] - r0, xpoint[0][1] - z0)
-    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (xpoint_theta + 2 * pi) * (
+    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (
+        xpoint_theta + 2 * pi
+    ) * (
         xpoint_theta < 0
     )  # let's make it between 0 and 2*pi
     # How close in theta to allow theta grid points to the X-point

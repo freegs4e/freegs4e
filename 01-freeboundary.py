@@ -8,19 +8,24 @@ import freegs4e
 
 tokamak = freegs4e.machine.TestTokamak()
 
-eq = freegs4e.Equilibrium(tokamak=tokamak,
-                        Rmin=0.1, Rmax=2.0,    # Radial domain
-                        Zmin=-1.0, Zmax=1.0,   # Height range
-                        nx=65, ny=65,          # Number of grid points
-                        boundary=freegs4e.boundary.freeBoundaryHagenow)  # Boundary condition
+eq = freegs4e.Equilibrium(
+    tokamak=tokamak,
+    Rmin=0.1,
+    Rmax=2.0,  # Radial domain
+    Zmin=-1.0,
+    Zmax=1.0,  # Height range
+    nx=65,
+    ny=65,  # Number of grid points
+    boundary=freegs4e.boundary.freeBoundaryHagenow,
+)  # Boundary condition
 
 
 #########################################
 # Plasma profiles
 
-profiles = freegs4e.jtor.ConstrainPaxisIp(1e3, # Plasma pressure on axis [Pascals]
-                                        2e5, # Plasma current [Amps]
-                                        2.0) # Vacuum f=R*Bt
+profiles = freegs4e.jtor.ConstrainPaxisIp(
+    1e3, 2e5, 2.0  # Plasma pressure on axis [Pascals]  # Plasma current [Amps]
+)  # Vacuum f=R*Bt
 
 #########################################
 # Coil current constraints
@@ -28,19 +33,20 @@ profiles = freegs4e.jtor.ConstrainPaxisIp(1e3, # Plasma pressure on axis [Pascal
 # Specify locations of the X-points
 # to use to constrain coil currents
 
-xpoints = [(1.1, -0.6),   # (R,Z) locations of X-points
-           (1.1, 0.8)]
+xpoints = [(1.1, -0.6), (1.1, 0.8)]  # (R,Z) locations of X-points
 
-isoflux = [(1.1,-0.6, 1.1,0.6)] # (R1,Z1, R2,Z2) pair of locations
+isoflux = [(1.1, -0.6, 1.1, 0.6)]  # (R1,Z1, R2,Z2) pair of locations
 
 constrain = freegs4e.control.constrain(xpoints=xpoints, isoflux=isoflux)
 
 #########################################
 # Nonlinear solve
 
-freegs4e.solve(eq,          # The equilibrium to adjust
-             profiles,    # The toroidal current profile function
-             constrain)   # Constraint function to set coil currents
+freegs4e.solve(
+    eq,  # The equilibrium to adjust
+    profiles,  # The toroidal current profile function
+    constrain,
+)  # Constraint function to set coil currents
 
 # eq now contains the solution
 
@@ -78,6 +84,7 @@ constrain.plot(axis=axis, show=True)
 # Safety factor
 
 import matplotlib.pyplot as plt
+
 plt.plot(*eq.q())
 plt.xlabel(r"Normalised $\psi$")
 plt.ylabel("Safety factor")

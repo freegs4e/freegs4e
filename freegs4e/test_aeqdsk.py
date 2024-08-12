@@ -1,5 +1,6 @@
-import numpy
 from io import StringIO
+
+import numpy
 
 from . import _aeqdsk
 

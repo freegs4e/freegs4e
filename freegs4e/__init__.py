@@ -31,20 +31,12 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 from importlib import metadata
 
 __version__ = metadata.version("freegs4e")
 
-from .equilibrium import Equilibrium
-
-from . import jtor
-
-from . import machine
-
-from . import control
-
-from .picard import solve
-
+from . import control, jtor, machine, plotting
 from .dump import OutputFile
-
-from . import plotting
+from .equilibrium import Equilibrium
+from .picard import solve

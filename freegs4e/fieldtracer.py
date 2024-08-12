@@ -13,13 +13,13 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
-"""# Field line tracing
+"""  # Field line tracing
 
 from builtins import object
 
 import numpy as np
-from scipy.integrate import odeint
 from scipy import interpolate
+from scipy.integrate import odeint
 
 from . import critical
 
@@ -49,8 +49,12 @@ class FieldTracer(object):
 
         evolving[
             np.logical_or(
-                np.logical_or((R < self._eq.Rmin + eps), (R > self._eq.Rmax - eps)),
-                np.logical_or((Z < self._eq.Zmin + eps), (Z > self._eq.Zmax - eps)),
+                np.logical_or(
+                    (R < self._eq.Rmin + eps), (R > self._eq.Rmax - eps)
+                ),
+                np.logical_or(
+                    (Z < self._eq.Zmin + eps), (Z > self._eq.Zmax - eps)
+                ),
             )
         ] = 0.0
         return evolving
@@ -117,7 +121,7 @@ class FieldTracer(object):
         Bz = self._eq.Bz(R, Z)
         Btor = self._eq.Btor(R, Z)
 
-        B = np.sqrt(Br ** 2 + Bz ** 2 + Btor ** 2)
+        B = np.sqrt(Br**2 + Bz**2 + Btor**2)
 
         # Detect when the boundary has been reached
         self.updateEvolving(R, Z, evolving)
@@ -152,10 +156,16 @@ class FieldTracer(object):
         evolving = np.ones(array_shape)
 
         # (R,Z,length) with length=0 initially
-        position = np.column_stack((Rstart, Zstart, np.zeros(array_shape))).flatten()
+        position = np.column_stack(
+            (Rstart, Zstart, np.zeros(array_shape))
+        ).flatten()
 
         result = odeint(
-            self.fieldDirection, position, angles, args=(evolving, backward), rtol=rtol
+            self.fieldDirection,
+            position,
+            angles,
+            args=(evolving, backward),
+            rtol=rtol,
         )
 
         return result.reshape(angles.shape + array_shape + (3,))
@@ -176,7 +186,9 @@ class LineCoordinates:
         self.length = length
 
 
-def traceFieldLines(eq, solwidth=0.03, nlines=10, nturns=50, npoints=200, axis=None):
+def traceFieldLines(
+    eq, solwidth=0.03, nlines=10, nturns=50, npoints=200, axis=None
+):
     """Trace field lines from the outboard midplane
 
     Inputs
