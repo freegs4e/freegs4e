@@ -1109,6 +1109,8 @@ class Lao85(Profile):
 
         self.Ip = Ip
         self.Ip_logic = Ip_logic
+        if self.Ip_logic is False:
+            self.L = 1
 
         self._fvac = fvac
         self.Raxis = Raxis
