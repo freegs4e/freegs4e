@@ -1373,7 +1373,8 @@ class ProfilesPprimeFfprime:
 
 class TensionSpline(Profile):
     """
-    Implements tension spline profiles as used in ? ...
+    Implements tension spline profiles. Typically used for more modelling 
+    more complex shaped profiles (from magnetics + MSE plasma reconstructions).
     
 
     J = \lambda * (R/R_axis P' + Raxis/R FF'/mu0)
@@ -1539,6 +1540,10 @@ class TensionSpline(Profile):
         
         """
     
+        size = x.shape
+        if len(size) > 1:
+            x = x.flatten()
+        
         # fixed parameters
         x_diffs = xn[1:] - xn[0:-1]
         sinh_diffs = np.sinh(sigma*x_diffs)
@@ -1546,7 +1551,7 @@ class TensionSpline(Profile):
         # initial solution array (each column is f_n(x) for a different n)
         X = np.tile(x,(len(x_diffs),1)).T
     
-        # calculate the terms in the spline (vectorised)
+        # calculate the terms in the spline (vectorised for speed)
         t1 = (yn[0:-1] - zn[0:-1]/(sigma**2))*((xn[1:] - X)/x_diffs)
         t2 = (zn[0:-1]*np.sinh(sigma*(xn[1:] - X)) + zn[1:]*np.sinh(sigma*(X - xn[0:-1])))/((sigma**2)*sinh_diffs)
         t3 = (yn[1:] - zn[1:]/(sigma**2))*((X - xn[0:-1])/x_diffs)
@@ -1566,4 +1571,11 @@ class TensionSpline(Profile):
         for i in np.where(np.isin(x, xn))[0]:
             if i not in [0,len(x)-1]:
                 f[i] /= 2
-        return f
+        
+        # rehape final output if required
+        if len(size) > 1:
+            return f.reshape(size)
+        else:
+            return f
+                
+        
