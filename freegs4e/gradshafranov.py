@@ -22,6 +22,7 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 from numpy import clip, pi, sqrt, zeros
 from scipy.sparse import eye, lil_matrix
+
 # Elliptic integrals of first and second kind (K and E)
 from scipy.special import ellipe, ellipk
 
@@ -155,7 +156,12 @@ class GSsparse4thOrder:
     # Coefficients for first derivatives
     # (index offset, weight)
 
-    centred_1st = [(-2, 1.0 / 12), (-1, -8.0 / 12), (1, 8.0 / 12), (2, -1.0 / 12)]
+    centred_1st = [
+        (-2, 1.0 / 12),
+        (-1, -8.0 / 12),
+        (1, 8.0 / 12),
+        (2, -1.0 / 12),
+    ]
 
     offset_1st = [
         (-1, -3.0 / 12),
@@ -296,7 +302,9 @@ def GreensBz(Rc, Zc, R, Z, eps=1e-4):
     Bz = (1/R) d psi/dR
     """
 
-    return (Greens(Rc, Zc, R + eps, Z) - Greens(Rc, Zc, R - eps, Z)) / (2.0 * eps * R)
+    return (Greens(Rc, Zc, R + eps, Z) - Greens(Rc, Zc, R - eps, Z)) / (
+        2.0 * eps * R
+    )
 
 
 def GreensBr(Rc, Zc, R, Z, eps=1e-4):
@@ -307,7 +315,9 @@ def GreensBr(Rc, Zc, R, Z, eps=1e-4):
     Br = -(1/R) d psi/dZ
     """
 
-    return (Greens(Rc, Zc, R, Z - eps) - Greens(Rc, Zc, R, Z + eps)) / (2.0 * eps * R)
+    return (Greens(Rc, Zc, R, Z - eps) - Greens(Rc, Zc, R, Z + eps)) / (
+        2.0 * eps * R
+    )
 
 
 def GreensdBzdr(Rc, Zc, R, Z, eps=2e-3):
@@ -318,7 +328,9 @@ def GreensdBzdr(Rc, Zc, R, Z, eps=2e-3):
     Bz = (1/R) d psi/dR
     """
 
-    return (GreensBz(Rc, Zc, R + eps, Z) - GreensBz(Rc, Zc, R - eps, Z)) / (2.0 * eps)
+    return (GreensBz(Rc, Zc, R + eps, Z) - GreensBz(Rc, Zc, R - eps, Z)) / (
+        2.0 * eps
+    )
 
 
 def GreensdBrdz(Rc, Zc, R, Z, eps=2e-3):
@@ -340,7 +352,9 @@ def GreensdBzdz(Rc, Zc, R, Z, eps=2e-3):
     Bz = (1/R) d psi/dR
     """
 
-    return (GreensBz(Rc, Zc, R, Z + eps) - GreensBz(Rc, Zc, R, Z - eps)) / (2.0 * eps)
+    return (GreensBz(Rc, Zc, R, Z + eps) - GreensBz(Rc, Zc, R, Z - eps)) / (
+        2.0 * eps
+    )
 
 
 def GreensdBrdr(Rc, Zc, R, Z, eps=2e-3):
@@ -351,4 +365,6 @@ def GreensdBrdr(Rc, Zc, R, Z, eps=2e-3):
     Bz = (1/R) d psi/dR
     """
 
-    return (GreensBr(Rc, Zc, R + eps, Z) - GreensBr(Rc, Zc, R - eps, Z)) / (2.0 * eps)
+    return (GreensBr(Rc, Zc, R + eps, Z) - GreensBr(Rc, Zc, R - eps, Z)) / (
+        2.0 * eps
+    )

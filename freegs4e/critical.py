@@ -24,8 +24,22 @@ import warnings
 from unittest import makeSuite
 
 import numpy as np
-from numpy import (abs, amax, arctan2, argmax, argmin, clip, cos, dot,
-                   linspace, pi, sin, sqrt, sum, zeros)
+from numpy import (
+    abs,
+    amax,
+    arctan2,
+    argmax,
+    argmin,
+    clip,
+    cos,
+    dot,
+    linspace,
+    pi,
+    sin,
+    sqrt,
+    sum,
+    zeros,
+)
 from numpy.linalg import inv
 from scipy import interpolate
 
@@ -72,7 +86,9 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
     f = interpolate.RectBivariateSpline(R[:, 0], Z[0, :], psi)
 
     # Find candidate locations, based on minimising Bp^2
-    Bp2 = (f(R, Z, dx=1, grid=False) ** 2 + f(R, Z, dy=1, grid=False) ** 2) / R**2
+    Bp2 = (
+        f(R, Z, dx=1, grid=False) ** 2 + f(R, Z, dy=1, grid=False) ** 2
+    ) / R**2
 
     # Get grid resolution, which determines a reasonable tolerance
     # for the Newton iteration search area
@@ -123,15 +139,17 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
 
                         dR = R[1, 0] - R[0, 0]
                         dZ = Z[0, 1] - Z[0, 0]
-                        d2dr2 = (psi[i + 2, j] - 2.0 * psi[i, j] + psi[i - 2, j]) / (
-                            2.0 * dR
-                        ) ** 2
-                        d2dz2 = (psi[i, j + 2] - 2.0 * psi[i, j] + psi[i, j - 2]) / (
-                            2.0 * dZ
-                        ) ** 2
+                        d2dr2 = (
+                            psi[i + 2, j] - 2.0 * psi[i, j] + psi[i - 2, j]
+                        ) / (2.0 * dR) ** 2
+                        d2dz2 = (
+                            psi[i, j + 2] - 2.0 * psi[i, j] + psi[i, j - 2]
+                        ) / (2.0 * dZ) ** 2
                         d2drdz = (
-                            (psi[i + 2, j + 2] - psi[i + 2, j - 2]) / (4.0 * dZ)
-                            - (psi[i - 2, j + 2] - psi[i - 2, j - 2]) / (4.0 * dZ)
+                            (psi[i + 2, j + 2] - psi[i + 2, j - 2])
+                            / (4.0 * dZ)
+                            - (psi[i - 2, j + 2] - psi[i - 2, j - 2])
+                            / (4.0 * dZ)
                         ) / (4.0 * dR)
                         D = d2dr2 * d2dz2 - d2drdz**2
 
@@ -160,7 +178,9 @@ def find_critical_old(R, Z, psi, discard_xpoints=True):
                     count += 1
                     # If (R1,Z1) is too far from (R0,Z0) then discard
                     # or if we've taken too many iterations
-                    if ((R1 - R0) ** 2 + (Z1 - Z0) ** 2 > radius_sq) or (count > 100):
+                    if ((R1 - R0) ** 2 + (Z1 - Z0) ** 2 > radius_sq) or (
+                        count > 100
+                    ):
                         # Discard this point
                         break
 
@@ -248,7 +268,9 @@ def remove_dup(points):
     return result
 
 
-def find_critical(R, Z, psi, mask_inside_limiter=None, signIp=1, discard_xpoints=True):
+def find_critical(
+    R, Z, psi, mask_inside_limiter=None, signIp=1, discard_xpoints=True
+):
     # if old:
     #     opoint, xpoint = find_critical_old(R,Z,psi, discard_xpoints)
     # else:
@@ -544,7 +566,11 @@ def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
         while True:
             mask[i, j] = 1  # Mark as in the core
 
-            if (i < nx - 1) and (psin[i + 1, j] < 1.0) and (mask[i + 1, j] < 0.5):
+            if (
+                (i < nx - 1)
+                and (psin[i + 1, j] < 1.0)
+                and (mask[i + 1, j] < 0.5)
+            ):
                 stack.append((i + 1, j))
             if (i > 0) and (psin[i - 1, j] < 1.0) and (mask[i - 1, j] < 0.5):
                 stack.append((i - 1, j))
@@ -699,7 +725,7 @@ def find_psisurface(eq, psifunc, r0, z0, r1, z1, psival=1.0, n=100, axis=None):
 
 
 def find_separatrix(
-    eq, ntheta=20, axis=None, psival=1.0#, recalculate_equilibrum=True
+    eq, ntheta=20, axis=None, psival=1.0  # , recalculate_equilibrum=True
 ):
     """Find the R, Z coordinates of the separatrix for equilbrium
     eq. Returns a tuple of (R, Z, R_X, Z_X), where R_X, Z_X are the
@@ -742,7 +768,9 @@ def find_separatrix(
 
     # Avoid putting theta grid points exactly on the X-points
     xpoint_theta = arctan2(xpoint[0][0] - r0, xpoint[0][1] - z0)
-    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (xpoint_theta + 2 * pi) * (
+    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (
+        xpoint_theta + 2 * pi
+    ) * (
         xpoint_theta < 0
     )  # let's make it between 0 and 2*pi
     # How close in theta to allow theta grid points to the X-point
@@ -770,7 +798,14 @@ def find_separatrix(
 
 
 def find_safety(
-    eq, npsi=1, psinorm=None, ntheta=128, psi=None, opoint=None, xpoint=None, axis=None
+    eq,
+    npsi=1,
+    psinorm=None,
+    ntheta=128,
+    psi=None,
+    opoint=None,
+    xpoint=None,
+    axis=None,
 ):
     """Find the safety factor for each value of psi
     Calculates equally spaced flux surfaces. Points on
@@ -799,7 +834,9 @@ def find_safety(
     else:
         psinormal = (psi - opoint[0][2]) / (xpoint[0][2] - opoint[0][2])
 
-    psifunc = interpolate.RectBivariateSpline(eq.R[:, 0], eq.Z[0, :], psinormal)
+    psifunc = interpolate.RectBivariateSpline(
+        eq.R[:, 0], eq.Z[0, :], psinormal
+    )
 
     r0, z0 = opoint[0][0:2]
 
@@ -808,7 +845,9 @@ def find_safety(
 
     # Avoid putting theta grid points exactly on the X-points
     xpoint_theta = arctan2(xpoint[0][0] - r0, xpoint[0][1] - z0)
-    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (xpoint_theta + 2 * pi) * (
+    xpoint_theta = xpoint_theta * (xpoint_theta >= 0) + (
+        xpoint_theta + 2 * pi
+    ) * (
         xpoint_theta < 0
     )  # let's make it between 0 and 2*pi
     # How close in theta to allow theta grid points to the X-point
