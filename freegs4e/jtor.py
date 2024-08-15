@@ -1175,7 +1175,8 @@ class Lao85(Profile):
 
     #     return opt, xpt
 
-    def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
+    def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask, 
+                   torefine=False, refineR=None):
         """
 
         Parameters
@@ -1189,6 +1190,7 @@ class Lao85(Profile):
         psi_bndry : float, optional
             Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
 
+            
         Returns
         -------
         Jtor : np.ndarray
@@ -1205,6 +1207,9 @@ class Lao85(Profile):
 
         dR = R[1, 0] - R[0, 0]
         dZ = Z[0, 1] - Z[0, 0]
+        
+        if torefine:
+            R = 1.0*refineR
 
         # Calculate normalised psi.
         # 0 = magnetic axis
@@ -1215,16 +1220,14 @@ class Lao85(Profile):
         # Current profile shape
         # Pprime
         pprime_term = (
-            psi_norm[np.newaxis, :, :]
-            ** self.alpha_exp[:, np.newaxis, np.newaxis]
+            psi_norm[np.newaxis, :, :] ** self.alpha_exp[:, np.newaxis, np.newaxis]
         )
         pprime_term *= self.alpha[:, np.newaxis, np.newaxis]
         pprime_term = np.sum(pprime_term, axis=0)
         pprime_term *= R / self.Raxis
         # FFprime
         ffprime_term = (
-            psi_norm[np.newaxis, :, :]
-            ** self.beta_exp[:, np.newaxis, np.newaxis]
+            psi_norm[np.newaxis, :, :] ** self.beta_exp[:, np.newaxis, np.newaxis]
         )
         ffprime_term *= self.beta[:, np.newaxis, np.newaxis]
         ffprime_term = np.sum(ffprime_term, axis=0)
@@ -1232,6 +1235,9 @@ class Lao85(Profile):
         ffprime_term /= mu0
         # Sum together
         Jtor = pprime_term + ffprime_term
+
+        if torefine:
+            return Jtor
 
         if mask is not None:
             # If there is a masking function (X-points, limiters)
@@ -1241,9 +1247,7 @@ class Lao85(Profile):
             jtorIp = np.sum(Jtor)
             if jtorIp == 0:
                 self.problem_psi = psi
-                raise ValueError(
-                    "Total plasma current is zero! Cannot renormalise."
-                )
+                raise ValueError("Total plasma current is zero! Cannot renormalise.")
             L = self.Ip / (jtorIp * dR * dZ)
             Jtor = L * Jtor
         else:
