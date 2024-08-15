@@ -114,7 +114,13 @@ def plotEquilibrium(
             if xpt is not []:
                 psi_bndry = xpt[0][2]
                 if eq._profiles.flag_limiter:
-                    # axis.contour(eq.R, eq.Z, psi, levels=[eq._profiles.psi_bndry], colors="k")
+                    axis.contour(
+                        eq.R,
+                        eq.Z,
+                        psi,
+                        levels=[eq._profiles.psi_bndry],
+                        colors="k",
+                    )
                     axis.contour(
                         eq.R,
                         eq.Z,
@@ -123,18 +129,12 @@ def plotEquilibrium(
                         colors="r",
                         linestyles="dashed",
                     )
-                    cs = plt.contour(
-                        eq.R,
-                        eq.Z,
-                        psi,
-                        levels=[eq._profiles.psi_bndry],
-                        alpha=0,
-                    )
-                    paths = cs.collections[0].get_paths()
-                    for path in paths:
-                        vertices = path.vertices
-                        if np.sum(vertices[0] == vertices[-1]) > 1:
-                            axis.plot(vertices[:, 0], vertices[:, 1], "k")
+                    # cs = plt.contour(eq.R, eq.Z, psi, levels=[eq._profiles.psi_bndry], alpha=0)
+                    # paths = cs.collections[0].get_paths()
+                    # for path in paths:
+                    #     vertices = path.vertices
+                    #     if np.sum(vertices[0] == vertices[-1])>1:
+                    #         axis.plot(vertices[:,0], vertices[:,1], 'k')
 
                 else:
                     axis.contour(

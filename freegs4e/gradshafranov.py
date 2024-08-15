@@ -294,7 +294,7 @@ def Greens(Rc, Zc, R, Z):
     )
 
 
-def GreensBz(Rc, Zc, R, Z, eps=1e-3):
+def GreensBz(Rc, Zc, R, Z, eps=1e-4):
     """
     Calculate vertical magnetic field at (R,Z)
     due to unit current at (Rc, Zc)
@@ -307,7 +307,7 @@ def GreensBz(Rc, Zc, R, Z, eps=1e-3):
     )
 
 
-def GreensBr(Rc, Zc, R, Z, eps=1e-3):
+def GreensBr(Rc, Zc, R, Z, eps=1e-4):
     """
     Calculate radial magnetic field at (R,Z)
     due to unit current at (Rc, Zc)
@@ -317,4 +317,54 @@ def GreensBr(Rc, Zc, R, Z, eps=1e-3):
 
     return (Greens(Rc, Zc, R, Z - eps) - Greens(Rc, Zc, R, Z + eps)) / (
         2.0 * eps * R
+    )
+
+
+def GreensdBzdr(Rc, Zc, R, Z, eps=2e-3):
+    """
+    Calculate derivative of vertical magnetic field at (R,Z)
+    due to unit current at (Rc, Zc)
+
+    Bz = (1/R) d psi/dR
+    """
+
+    return (GreensBz(Rc, Zc, R + eps, Z) - GreensBz(Rc, Zc, R - eps, Z)) / (
+        2.0 * eps
+    )
+
+
+def GreensdBrdz(Rc, Zc, R, Z, eps=2e-3):
+    """
+    Calculate derivative of radial magnetic field at (R,Z)
+    due to unit current at (Rc, Zc)
+
+    Bz = (1/R) d psi/dR
+    """
+
+    return GreensdBzdr(Rc, Zc, R, Z, eps)
+
+
+def GreensdBzdz(Rc, Zc, R, Z, eps=2e-3):
+    """
+    Calculate  derivative of  vertical magnetic field at (R,Z)
+    due to unit current at (Rc, Zc)
+
+    Bz = (1/R) d psi/dR
+    """
+
+    return (GreensBz(Rc, Zc, R, Z + eps) - GreensBz(Rc, Zc, R, Z - eps)) / (
+        2.0 * eps
+    )
+
+
+def GreensdBrdr(Rc, Zc, R, Z, eps=2e-3):
+    """
+    Calculate  derivative of  vertical magnetic field at (R,Z)
+    due to unit current at (Rc, Zc)
+
+    Bz = (1/R) d psi/dR
+    """
+
+    return (GreensBr(Rc, Zc, R + eps, Z) - GreensBr(Rc, Zc, R - eps, Z)) / (
+        2.0 * eps
     )

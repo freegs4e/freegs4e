@@ -382,6 +382,7 @@ def fastcrit(R, Z, psi, mask_inside_limiter):
         posZ = np.argmin((Z[:1, :] - opoint[:, 1:2]) ** 2, axis=1)
         opoint = opoint[mask_inside_limiter[posR, posZ]]
 
+    len_opoint = len(opoint)
     if len_opoint == 0:
         # Can't order primary O-point, X-point so return
         raise ValueError("No opoints found!")
@@ -724,7 +725,7 @@ def find_psisurface(eq, psifunc, r0, z0, r1, z1, psival=1.0, n=100, axis=None):
 
 
 def find_separatrix(
-    eq, opoint=None, xpoint=None, ntheta=20, psi=None, axis=None, psival=1.0
+    eq, ntheta=20, axis=None, psival=1.0  # , recalculate_equilibrum=True
 ):
     """Find the R, Z coordinates of the separatrix for equilbrium
     eq. Returns a tuple of (R, Z, R_X, Z_X), where R_X, Z_X are the
@@ -740,13 +741,23 @@ def find_separatrix(
     psi - Grid of psi on (R, Z)
     axis - A matplotlib axis object to plot points on
     """
-    if psi is None:
-        psi = eq.psi()
+    psi = eq.psi()
 
-    if (opoint is None) or (xpoint is None):
+    # if recalculate_equilibrum:
+    #     opoint, xpoint = find_critical(eq.R, eq.Z, psi)
+    # else:
+    try:
+        opoint = eq.opt
+        xpoint = eq.xpt
+        psi_boundary = eq.psi_bndry
+    except AttributeError:
+        warnings.warn(
+            "The equilibrium object does not have the critical points stored. Recalculating. If a limiter equilibrium, solve first for the limiter separatrix."
+        )
         opoint, xpoint = find_critical(eq.R, eq.Z, psi)
+        psi_boundary = xpoint[0][2]
 
-    psinorm = (psi - opoint[0][2]) / (xpoint[0][2] - opoint[0][2])
+    psinorm = (psi - opoint[0][2]) / (psi_boundary - opoint[0][2])
 
     psifunc = interpolate.RectBivariateSpline(eq.R[:, 0], eq.Z[0, :], psinorm)
 

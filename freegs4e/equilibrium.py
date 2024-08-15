@@ -20,6 +20,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import warnings
+
 import numpy as np
 from numpy import array, exp, linspace, meshgrid, pi
 from scipy import interpolate
@@ -109,6 +111,7 @@ class Equilibrium:
         if psi is None:
             # Starting guess for psi
             psi = self.create_psi_plasma_default()
+            self.gpars = np.array([0.5, 0.5, 0, 2])
         self.plasma_psi = psi
 
         # Calculate coil Greens functions. This is an optimisation,
@@ -137,14 +140,36 @@ class Equilibrium:
         )
 
     def create_psi_plasma_default(
-        self,
+        self, adaptive_centre=False, gpars=(0.5, 0.5, 0, 2)
     ):
         """Creates a Gaussian starting guess for plasma_psi"""
         nx, ny = np.shape(self.R)
         xx, yy = meshgrid(
             linspace(0, 1, nx), linspace(0, 1, ny), indexing="ij"
         )
-        psi = exp(-((xx - 0.35) ** 2 + (yy - 0.5) ** 2))
+
+        if adaptive_centre == True:
+            ntot = np.sum(self.mask_inside_limiter)
+            xc = (
+                np.sum(
+                    self.mask_inside_limiter
+                    * linspace(0, 1, nx)[:, np.newaxis]
+                )
+                / ntot
+            )
+            yc = (
+                np.sum(
+                    self.mask_inside_limiter
+                    * linspace(0, 1, ny)[np.newaxis, :]
+                )
+                / ntot
+            )
+        else:
+            xc, yc = gpars[:2]
+        psi = exp(
+            gpars[2]
+            - ((np.abs(xx - xc)) ** gpars[3] + (np.abs(yy - yc)) ** gpars[3])
+        )
 
         psi[0, :] = 0.0
         psi[:, 0] = 0.0
@@ -381,9 +406,7 @@ class Equilibrium:
         Returns an array of ntheta (R, Z) coordinates of the separatrix,
         equally spaced in geometric poloidal angle.
         """
-        return array(
-            critical.find_separatrix(self, ntheta=ntheta, psi=self.psi())
-        )[:, 0:2]
+        return array(critical.find_separatrix(self, ntheta=ntheta))[:, 0:2]
 
     def solve(self, profiles, Jtor=None, psi=None, psi_bndry=None):
         """
@@ -531,10 +554,31 @@ class Equilibrium:
 
         print_forces(self.getForces())
 
-    def innerOuterSeparatrix(self, Z=0.0):
+    def innerOuterSeparatrix(
+        self, Z: float = 0.0, recalculate_equilibrium: bool = True
+    ):
         """
-        Locate R co ordinates of separatrix at both
-        inboard and outboard poloidal midplane (Z = 0)
+        Locate R co ordinates of separatrix at both inboard and outboard
+        poloidal midplane (Z = 0).
+
+        If the equilibrium has recently been solved, you can set
+        recalculate_equilibrium to False to avoid recalculating it.
+
+        Parameters
+        ----------
+        Z : float, optional
+            The Z value at which to find the separatrix. Defaults to
+            0.0.
+        recalculate_equilibrium : bool, optional
+            Whether or not to recalculate the equilibrium. Defaults to
+            True.
+
+        Returns
+        -------
+        R_sep_in : float
+            The inner separatrix major radius.
+        R_sep_out : float
+            The outer separatrix major radius.
         """
         # Find the closest index to requested Z
         Zindex = np.argmin(abs(self.Z[0, :] - Z))
@@ -544,8 +588,24 @@ class Equilibrium:
             self.psi_bndry - self.psi_axis
         )
 
+        if recalculate_equilibrium:
+            Rindex_axis = np.argmin(abs(self.R[:, 0] - self.Rmagnetic()))
+        else:
+            try:
+                Rindex_axis = Rindex_axis = np.argmin(
+                    abs(eq.R[:, 0] - self._profiles.opt[0][0])
+                )
+            except AttributeError as e:
+                print(e)
+                warnings.warn(
+                    "The equilibrium object does not seem to have been updated. "
+                    + "You can pass recalculate_equilibrium=True to find the magnetic axis."
+                )
+                raise e
+
         # Start from the magnetic axis
-        Rindex_axis = np.argmin(abs(self.R[:, 0] - self.Rmagnetic()))
+        if Rindex_axis is None:
+            Rindex_axis = np.argmin(abs(self.R[:, 0] - self.Rmagnetic()))
 
         # Inner separatrix
         # Get the maximum index where psi > 1 in the R index range from 0 to Rindex_axis
