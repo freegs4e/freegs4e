@@ -1371,3 +1371,233 @@ class ProfilesPprimeFfprime:
 
     def fvac(self):
         return self._fvac
+
+
+class TensionSpline(Profile):
+    """
+    Implements tension spline profiles. Typically used for more modelling
+    more complex shaped profiles (from magnetics + MSE plasma reconstructions).
+
+
+    J = \lambda * (R/R_axis P' + Raxis/R FF'/mu0)
+
+    with P' = sum_n f_n
+    FF' = sum_n f_n
+
+    where f_n is the tension spline.
+
+    See https://catxmai.github.io/pdfs/Math212_ProjectReport.pdf for definition.
+
+    """
+
+    def __init__(
+        self,
+        Ip,
+        fvac,
+        pp_knots,
+        pp_values,
+        pp_values_2,
+        pp_sigma,
+        ffp_knots,
+        ffp_values,
+        ffp_values_2,
+        ffp_sigma,
+        Raxis=1,
+        Ip_logic=True,
+    ):
+        """
+        Ip    - Plasma current [Amps]
+        fvac  - Vacuum f = R*Bt
+        pp_knots - knot points of pprime, list or array
+        pp_values - values of pprime at knot points, list or array
+        pp_values_2 - values of 2nd derivative of pprime at knot points, list or array
+        pp_sigma - pprime tension parameter, non-neative float
+        ffp_knots - knot points of ffprime, list or array
+        ffp_values - values of ffprime at knot points, list or array
+        ffp_values_2 - values of 2nd derivative of ffprime at knot points, list or array
+        ffp_sigma - ffprime tension parameter, non-neative float
+        Raxis - R used in p' and ff' components]
+        Ip_logic - boole, if True entire profile is re-normalised to satisfy Ip identically
+        """
+
+        # Set parameters for later use
+        self.pp_knots = np.array(pp_knots)
+        self.pp_values = np.array(pp_values)
+        self.pp_values_2 = np.array(pp_values_2)
+        self.pp_sigma = pp_sigma
+        self.ffp_knots = np.array(ffp_knots)
+        self.ffp_values = np.array(ffp_values)
+        self.ffp_values_2 = np.array(ffp_values_2)
+        self.ffp_sigma = ffp_sigma
+
+        self.Ip = Ip
+        self.Ip_logic = Ip_logic
+
+        self._fvac = fvac
+        self.Raxis = Raxis
+
+        # parameter to indicate that this is coming from FreeGS4E
+        self.fast = True
+
+    def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
+        """
+
+        Parameters
+        ----------
+        R : np.ndarray
+            R coordinates of the grid points
+        Z : np.ndarray
+            Z coordinates of the grid points
+        psi : np.ndarray
+            Poloidal field flux / 2*pi at each grid points (as returned by FreeGS.Equilibrium.psi())
+        psi_bndry : float, optional
+            Value of the poloidal field flux at the boundary of the plasma (last closed flux surface), by default None
+
+        Returns
+        -------
+        Jtor : np.ndarray
+            Toroidal current density
+
+        Raises
+        ------
+        ValueError
+            Raises ValueError if it cannot find an O-point
+        """
+        if psi_bndry is None:
+            psi_bndry = psi[0, 0]
+            self.psi_bndry = psi_bndry
+
+        dR = R[1, 0] - R[0, 0]
+        dZ = Z[0, 1] - Z[0, 0]
+
+        # Calculate normalised psi.
+        # 0 = magnetic axis
+        # 1 = plasma boundary
+        psi_norm = (psi - psi_axis) / (psi_bndry - psi_axis)
+        psi_norm = np.clip(psi_norm, 0.0, 1.0)
+
+        # Current profile shape
+
+        # Pprime
+        pprime_term = self.tension_spline(
+            psi_norm,
+            self.pp_knots,
+            self.pp_values,
+            self.pp_values_2,
+            self.pp_sigma,
+        )
+        pprime_term *= R / self.Raxis
+
+        # FFprime
+        ffprime_term = self.tension_spline(
+            psi_norm,
+            self.ffp_knots,
+            self.ffp_values,
+            self.ffp_values_2,
+            self.ffp_sigma,
+        )
+        ffprime_term *= self.Raxis / R
+        ffprime_term /= mu0
+
+        # Sum together
+        Jtor = pprime_term + ffprime_term
+
+        if mask is not None:
+            # If there is a masking function (X-points, limiters)
+            Jtor *= mask
+
+        if self.Ip_logic:
+            jtorIp = np.sum(Jtor)
+            if jtorIp == 0:
+                self.problem_psi = psi
+                raise ValueError(
+                    "Total plasma current is zero! Cannot renormalise."
+                )
+            L = self.Ip / (jtorIp * dR * dZ)
+            Jtor = L * Jtor
+        else:
+            L = 1.0
+
+        self.jtor = Jtor.copy()
+        self.L = L
+
+        return self.jtor
+
+    # Profile functions
+    def pprime(self, pn):
+        """
+        dp/dpsi as a function of normalised psi. 0 outside core
+        Calculate pprimeshape inside the core only
+        """
+
+        shape = self.tension_spline(
+            pn, self.pp_knots, self.pp_values, self.pp_values_2, self.pp_sigma
+        )
+        return self.L * shape / self.Raxis
+
+    def ffprime(self, pn):
+        """
+        f * df/dpsi as a function of normalised psi. 0 outside core.
+        Calculate ffprimeshape inside the core only.
+        """
+
+        shape = self.tension_spline(
+            pn,
+            self.ffp_knots,
+            self.ffp_values,
+            self.ffp_values_2,
+            self.ffp_sigma,
+        )
+        return self.L * shape * self.Raxis
+
+    def fvac(self):
+        return self._fvac
+
+    def tension_spline(self, x, xn, yn, zn, sigma):
+        """
+        Evaluate the tension spline at locations in x using knot points xn,
+        values at knot points yn, and second derivative values at knot points zn.
+        Tension parameter is a non-negative float sigma.
+
+        """
+
+        size = x.shape
+        if len(size) > 1:
+            x = x.flatten()
+
+        # fixed parameters
+        x_diffs = xn[1:] - xn[0:-1]
+        sinh_diffs = np.sinh(sigma * x_diffs)
+
+        # initial solution array (each column is f_n(x) for a different n)
+        X = np.tile(x, (len(x_diffs), 1)).T
+
+        # calculate the terms in the spline (vectorised for speed)
+        t1 = (yn[0:-1] - zn[0:-1] / (sigma**2)) * ((xn[1:] - X) / x_diffs)
+        t2 = (
+            zn[0:-1] * np.sinh(sigma * (xn[1:] - X))
+            + zn[1:] * np.sinh(sigma * (X - xn[0:-1]))
+        ) / ((sigma**2) * sinh_diffs)
+        t3 = (yn[1:] - zn[1:] / (sigma**2)) * ((X - xn[0:-1]) / x_diffs)
+
+        # sum the values
+        sol = t1 + t2 + t3
+
+        # zero out values outisde range of each f_n(x) as they're not valid (recall definition of tension spline)
+        for n in range(0, len(xn) - 1):
+            ind = (xn[n] <= x) & (x <= xn[n + 1])
+            sol[~ind, n] = 0
+
+        # sum to find (alomst) final solution
+        f = np.sum(sol, axis=1)
+
+        # check if any of the interpolation and knot points are the same (if so we have double counted)
+        for i in np.where(np.isin(x, xn))[0]:
+            if i not in [0, len(x) - 1]:
+                f[i] /= 2
+
+        # rehape final output if required
+        if len(size) > 1:
+            return f.reshape(size)
+        else:
+            return f
