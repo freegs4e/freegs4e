@@ -1373,21 +1373,21 @@ class ProfilesPprimeFfprime:
 
 class TensionSpline(Profile):
     """
-    Implements tension spline profiles. Typically used for more modelling 
+    Implements tension spline profiles. Typically used for more modelling
     more complex shaped profiles (from magnetics + MSE plasma reconstructions).
-    
+
 
     J = \lambda * (R/R_axis P' + Raxis/R FF'/mu0)
 
-    with P' = sum_n f_n 
-    FF' = sum_n f_n 
-    
+    with P' = sum_n f_n
+    FF' = sum_n f_n
+
     where f_n is the tension spline.
-    
+
     See https://catxmai.github.io/pdfs/Math212_ProjectReport.pdf for definition.
 
     """
-    
+
     def __init__(
         self,
         Ip,
@@ -1437,7 +1437,6 @@ class TensionSpline(Profile):
         # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
 
-
     def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
         """
 
@@ -1476,16 +1475,28 @@ class TensionSpline(Profile):
         psi_norm = np.clip(psi_norm, 0.0, 1.0)
 
         # Current profile shape
-        
+
         # Pprime
-        pprime_term = self.tension_spline(psi_norm, self.pp_knots, self.pp_values, self.pp_values_2, self.pp_sigma)
+        pprime_term = self.tension_spline(
+            psi_norm,
+            self.pp_knots,
+            self.pp_values,
+            self.pp_values_2,
+            self.pp_sigma,
+        )
         pprime_term *= R / self.Raxis
-        
+
         # FFprime
-        ffprime_term = self.tension_spline(psi_norm, self.ffp_knots, self.ffp_values, self.ffp_values_2, self.ffp_sigma)
+        ffprime_term = self.tension_spline(
+            psi_norm,
+            self.ffp_knots,
+            self.ffp_values,
+            self.ffp_values_2,
+            self.ffp_sigma,
+        )
         ffprime_term *= self.Raxis / R
         ffprime_term /= mu0
-        
+
         # Sum together
         Jtor = pprime_term + ffprime_term
 
@@ -1516,8 +1527,10 @@ class TensionSpline(Profile):
         dp/dpsi as a function of normalised psi. 0 outside core
         Calculate pprimeshape inside the core only
         """
-        
-        shape = self.tension_spline(pn, self.pp_knots, self.pp_values, self.pp_values_2, self.pp_sigma)
+
+        shape = self.tension_spline(
+            pn, self.pp_knots, self.pp_values, self.pp_values_2, self.pp_sigma
+        )
         return self.L * shape / self.Raxis
 
     def ffprime(self, pn):
@@ -1525,57 +1538,64 @@ class TensionSpline(Profile):
         f * df/dpsi as a function of normalised psi. 0 outside core.
         Calculate ffprimeshape inside the core only.
         """
-        
-        shape = self.tension_spline(pn, self.ffp_knots, self.ffp_values, self.ffp_values_2, self.ffp_sigma)
+
+        shape = self.tension_spline(
+            pn,
+            self.ffp_knots,
+            self.ffp_values,
+            self.ffp_values_2,
+            self.ffp_sigma,
+        )
         return self.L * shape * self.Raxis
 
     def fvac(self):
         return self._fvac
-    
+
     def tension_spline(self, x, xn, yn, zn, sigma):
         """
-        Evaluate the tension spline at locations in x using knot points xn, 
-        values at knot points yn, and second derivative values at knot points zn. 
-        Tension parameter is a non-negative float sigma. 
-        
+        Evaluate the tension spline at locations in x using knot points xn,
+        values at knot points yn, and second derivative values at knot points zn.
+        Tension parameter is a non-negative float sigma.
+
         """
-    
+
         size = x.shape
         if len(size) > 1:
             x = x.flatten()
-        
+
         # fixed parameters
         x_diffs = xn[1:] - xn[0:-1]
-        sinh_diffs = np.sinh(sigma*x_diffs)
-        
+        sinh_diffs = np.sinh(sigma * x_diffs)
+
         # initial solution array (each column is f_n(x) for a different n)
-        X = np.tile(x,(len(x_diffs),1)).T
-    
+        X = np.tile(x, (len(x_diffs), 1)).T
+
         # calculate the terms in the spline (vectorised for speed)
-        t1 = (yn[0:-1] - zn[0:-1]/(sigma**2))*((xn[1:] - X)/x_diffs)
-        t2 = (zn[0:-1]*np.sinh(sigma*(xn[1:] - X)) + zn[1:]*np.sinh(sigma*(X - xn[0:-1])))/((sigma**2)*sinh_diffs)
-        t3 = (yn[1:] - zn[1:]/(sigma**2))*((X - xn[0:-1])/x_diffs)
-    
+        t1 = (yn[0:-1] - zn[0:-1] / (sigma**2)) * ((xn[1:] - X) / x_diffs)
+        t2 = (
+            zn[0:-1] * np.sinh(sigma * (xn[1:] - X))
+            + zn[1:] * np.sinh(sigma * (X - xn[0:-1]))
+        ) / ((sigma**2) * sinh_diffs)
+        t3 = (yn[1:] - zn[1:] / (sigma**2)) * ((X - xn[0:-1]) / x_diffs)
+
         # sum the values
         sol = t1 + t2 + t3
-        
+
         # zero out values outisde range of each f_n(x) as they're not valid (recall definition of tension spline)
-        for n in range(0, len(xn)-1):
-            ind = (xn[n] <= x) & (x <= xn[n+1])
-            sol[~ind,n] = 0
-        
+        for n in range(0, len(xn) - 1):
+            ind = (xn[n] <= x) & (x <= xn[n + 1])
+            sol[~ind, n] = 0
+
         # sum to find (alomst) final solution
         f = np.sum(sol, axis=1)
-    
+
         # check if any of the interpolation and knot points are the same (if so we have double counted)
         for i in np.where(np.isin(x, xn))[0]:
-            if i not in [0,len(x)-1]:
+            if i not in [0, len(x) - 1]:
                 f[i] /= 2
-        
+
         # rehape final output if required
         if len(size) > 1:
             return f.reshape(size)
         else:
             return f
-                
-        
