@@ -609,7 +609,7 @@ def inside_mask_(
     psi_bndry=None,
 ):
     """
-    Similar to core_mask_old above, except:
+    Similar to the original FreeGS core_mask above, except:
     (1) it's all stuff that can be JIT-compiled
     (2) some stuff is vectorised
     (3) the stack does not necessarily explore in only one direction, and it should be neat around the X-points
@@ -691,6 +691,9 @@ def inside_mask(
     psi_bndry=None,
     use_geom=True,
 ):
+    """Full identification of the diverted plasma core mask. 
+    Combines inside_mask_ and geom_inside_mask.
+    """
     mask = inside_mask_(
         R, Z, psi, opoint, xpoint, mask_outside_limiter, psi_bndry
     )
