@@ -691,7 +691,7 @@ def inside_mask(
     psi_bndry=None,
     use_geom=True,
 ):
-    """Full identification of the diverted plasma core mask. 
+    """Full identification of the diverted plasma core mask.
     Combines inside_mask_ and geom_inside_mask.
     """
     mask = inside_mask_(
