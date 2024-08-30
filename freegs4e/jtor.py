@@ -573,8 +573,6 @@ class ConstrainPaxisIp(Profile):
         # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
 
-    
-
     def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
         """
         Same code as original Jtor method, just split into two parts to enable
@@ -1052,7 +1050,7 @@ class Lao85(Profile):
         shape *= self.beta[:, np.newaxis]
         shape = np.sum(shape, axis=0)
         return self.L * shape * self.Raxis
-    
+
     def pressure(self, pn):
         """Claculates the pressure specifically for the Lao profile.
         Avoids using numerical integration.
@@ -1063,9 +1061,13 @@ class Lao85(Profile):
         """
         pn = np.array(pn)[np.newaxis, :]
         ones = np.ones_like(pn)
-        integrated_coeffs = self.alpha/np.arange(1,len(self.alpha_exp)+1)
-        norm_pressure = np.sum(integrated_coeffs[:,np.newaxis]*(ones - pn**(self.alpha_exp[:,np.newaxis]+1)), axis=0)
-        pressure = self.L*norm_pressure*(self.psi_axis-self.psi_bndry)
+        integrated_coeffs = self.alpha / np.arange(1, len(self.alpha_exp) + 1)
+        norm_pressure = np.sum(
+            integrated_coeffs[:, np.newaxis]
+            * (ones - pn ** (self.alpha_exp[:, np.newaxis] + 1)),
+            axis=0,
+        )
+        pressure = self.L * norm_pressure * (self.psi_axis - self.psi_bndry)
         return pressure
 
     def fvac(self):

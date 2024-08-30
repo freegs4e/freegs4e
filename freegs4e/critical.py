@@ -600,7 +600,13 @@ def core_mask(R, Z, psi, opoint, xpoint=[], psi_bndry=None):
 
 @njit(fastmath=True, cache=True)
 def inside_mask_(
-    R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bndry=None, 
+    R,
+    Z,
+    psi,
+    opoint,
+    xpoint=[],
+    mask_outside_limiter=None,
+    psi_bndry=None,
 ):
     """
     Similar to core_mask_old above, except:
@@ -670,15 +676,24 @@ def inside_mask_(
     #
 
     # remove effect of mask_outside_limiter
-    mask = (mask == 1)
+    mask = mask == 1
 
     return mask
 
+
 def inside_mask(
-    R, Z, psi, opoint, xpoint=[], mask_outside_limiter=None, psi_bndry=None, use_geom=True,
+    R,
+    Z,
+    psi,
+    opoint,
+    xpoint=[],
+    mask_outside_limiter=None,
+    psi_bndry=None,
+    use_geom=True,
 ):
     mask = inside_mask_(
-    R, Z, psi, opoint, xpoint, mask_outside_limiter, psi_bndry)
+        R, Z, psi, opoint, xpoint, mask_outside_limiter, psi_bndry
+    )
     if use_geom:
         # cure flooding
         mask = mask * geom_inside_mask(R, Z, opoint, xpoint)
@@ -694,14 +709,16 @@ def geom_inside_mask(R, Z, opoint, xpoint):
     inside_mask - mask returned by inside_mask function
     opoint, xpoint  - Values returned by find_critical
     """
-    
-    slope = -(opoint[0,0]-xpoint[0,0])/(opoint[0,1]-xpoint[0,1])
-    interc = xpoint[0,1] - slope*xpoint[0,0]
 
-    geom_mask = ((opoint[0,1] - (slope*opoint[0,0]+interc))*(Z - (slope*R+interc)))>0
+    slope = -(opoint[0, 0] - xpoint[0, 0]) / (opoint[0, 1] - xpoint[0, 1])
+    interc = xpoint[0, 1] - slope * xpoint[0, 0]
+
+    geom_mask = (
+        (opoint[0, 1] - (slope * opoint[0, 0] + interc))
+        * (Z - (slope * R + interc))
+    ) > 0
 
     return geom_mask
-
 
 
 def find_psisurface(eq, psifunc, r0, z0, r1, z1, psival=1.0, n=100, axis=None):
