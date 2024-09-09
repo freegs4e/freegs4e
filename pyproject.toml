@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "freegs4e"
-version = "0.1.1"
+version = "0.3.0"
 authors = [
     {name = "The FreeGS4E and FreeGS developers"}
 ]
 description = "Free boundary tokamak plasma equilibrium Grad-Shafranov solver for time evolution"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",

@@ -1,5 +1,5 @@
 numpy<2.0
-scipy~=1.14
+scipy~=1.9
 matplotlib~=3.0
 h5py~=3.11
 numba~=0.60
