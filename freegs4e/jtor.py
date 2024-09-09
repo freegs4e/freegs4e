@@ -1053,6 +1053,9 @@ class Lao85(Profile):
         )
         shape *= self.alpha[:, np.newaxis]
         shape = np.sum(shape, axis=0)
+        if hasattr(self, 'L') is False:
+            self.L=1
+            print('This is using self.L=1. Please check if this is appropriate')
         return self.L * shape / self.Raxis
 
     def ffprime(self, pn):
@@ -1066,6 +1069,9 @@ class Lao85(Profile):
         )
         shape *= self.beta[:, np.newaxis]
         shape = np.sum(shape, axis=0)
+        if hasattr(self, 'L') is False:
+            self.L=1
+            print('This is using self.L=1. Please check if this is appropriate')
         return self.L * shape * self.Raxis
 
     def pressure(self, pn):
@@ -1084,6 +1090,9 @@ class Lao85(Profile):
             * (ones - pn ** (self.alpha_exp[:, np.newaxis] + 1)),
             axis=0,
         )
+        if hasattr(self, 'L') is False:
+            self.L=1
+            print('This is using self.L=1. Please check if this is appropriate')
         pressure = self.L * norm_pressure * (self.psi_axis - self.psi_bndry)
         return pressure
 
