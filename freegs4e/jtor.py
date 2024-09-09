@@ -1029,6 +1029,8 @@ class Lao85(Profile):
         # Sum together
         Jtor = pprime_term + ffprime_term
 
+        Jtor *= (self.Ip*Jtor > 0)
+
         if torefine:
             return Jtor
 
