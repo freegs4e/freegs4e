@@ -205,7 +205,9 @@ def make_broad_mask(mask, layer_size=1):
     return layer_mask
 
 
-def plotProbes(probes, axis=None, show=True, floops=True, pickups=True):
+def plotProbes(
+    probes, axis=None, show=True, floops=True, pickups=True, pickups_scale=0.05
+):
     """
     Plot the fluxloops and pickup coils.
 
@@ -235,15 +237,16 @@ def plotProbes(probes, axis=None, show=True, floops=True, pickups=True):
 
     # locations of the pickup coils + their orientation
     if pickups:
-        scale = 0.05
         axis.plot(
             [
                 probes.pickup_pos[:, 0],
-                probes.pickup_pos[:, 0] + scale * probes.pickup_or[:, 0],
+                probes.pickup_pos[:, 0]
+                + pickups_scale * probes.pickup_or[:, 0],
             ],
             [
                 probes.pickup_pos[:, 2],
-                probes.pickup_pos[:, 2] + scale * probes.pickup_or[:, 2],
+                probes.pickup_pos[:, 2]
+                + pickups_scale * probes.pickup_or[:, 2],
             ],
             color="brown",
             marker="o",
