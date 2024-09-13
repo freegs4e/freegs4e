@@ -203,3 +203,55 @@ def make_broad_mask(mask, layer_size=1):
     ]
     layer_mask = (layer_mask > 0).astype(bool)
     return layer_mask
+
+
+def plotProbes(probes, axis=None, show=True, floops=True, pickups=True):
+    """
+    Plot the fluxloops and pickup coils.
+
+    axis     - Specify the axis on which to plot
+    show     - Call matplotlib.pyplot.show() before returning
+    floops   - Plot the floops
+    pickups  - Plot the pickups
+
+    """
+
+    import matplotlib.pyplot as plt
+
+    # create axis if none exists
+    if axis is None:
+        fig = plt.figure()
+        axis = fig.add_subplot(111)
+
+    # locations of the flux loop probes
+    if floops:
+        axis.scatter(
+            probes.floop_pos[:, 0],
+            probes.floop_pos[:, 1],
+            color="orange",
+            marker="D",
+            s=10,
+        )
+
+    # locations of the pickup coils + their orientation
+    if pickups:
+        scale = 0.05
+        axis.plot(
+            [
+                probes.pickup_pos[:, 0],
+                probes.pickup_pos[:, 0] + scale * probes.pickup_or[:, 0],
+            ],
+            [
+                probes.pickup_pos[:, 2],
+                probes.pickup_pos[:, 2] + scale * probes.pickup_or[:, 2],
+            ],
+            color="brown",
+            marker="o",
+            markersize=1,
+        )
+
+    if show:
+        plt.legend()
+        plt.show()
+
+    return axis
