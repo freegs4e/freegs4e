@@ -237,6 +237,7 @@ def plotProbes(
 
     # locations of the pickup coils + their orientation
     if pickups:
+        # pickup orientation
         axis.plot(
             [
                 probes.pickup_pos[:, 0],
@@ -249,10 +250,16 @@ def plotProbes(
                 + pickups_scale * probes.pickup_or[:, 2],
             ],
             color="brown",
-            marker="o",
             markersize=1,
         )
-
+        # pickup location
+        axis.scatter(
+            probes.pickup_pos[:, 0],
+            probes.pickup_pos[:, 2],
+            color="brown",
+            marker="o",
+            s=3,
+        )
     if show:
         plt.legend()
         plt.show()
