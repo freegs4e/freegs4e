@@ -1030,7 +1030,7 @@ class Lao85(Profile):
         dp/dpsi as a function of normalised psi. 0 outside core
         Calculate pprimeshape inside the core only
         """
-        pn_ = np.clip(np.array(pn))
+        pn_ = np.clip(np.array(pn),0,1)
         shape_pn = np.shape(pn_)
 
         shape = pn_[np.newaxis]**self.alpha_exp.reshape(list(np.shape(self.alpha_exp))+[1]*len(shape_pn))
@@ -1043,7 +1043,7 @@ class Lao85(Profile):
         f * df/dpsi as a function of normalised psi. 0 outside core.
         Calculate ffprimeshape inside the core only.
         """
-        pn_ = np.clip(np.array(pn))
+        pn_ = np.clip(np.array(pn),0,1)
         shape_pn = np.shape(pn_)
 
         shape = (
@@ -1063,7 +1063,7 @@ class Lao85(Profile):
         pn : np.array of normalised psi values
         """
 
-        pn_ = np.clip(np.array(pn))[np.newaxis]
+        pn_ = np.clip(np.array(pn),0,1)[np.newaxis]
         shape_pn = np.shape(pn_)
 
         ones = np.ones_like(pn)
