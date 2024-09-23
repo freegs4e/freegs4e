@@ -1030,11 +1030,11 @@ class Lao85(Profile):
         dp/dpsi as a function of normalised psi. 0 outside core
         Calculate pprimeshape inside the core only
         """
-        shape = (
-            np.clip(np.array(pn), 0.0, 1.0)[np.newaxis, :]
-            ** self.alpha_exp[:, np.newaxis]
-        )
-        shape *= self.alpha[:, np.newaxis]
+        pn_ = np.clip(np.array(pn))
+        shape_pn = np.shape(pn_)
+
+        shape = pn_[np.newaxis]**self.alpha_exp.reshape(list(np.shape(self.alpha_exp))+[1]*len(shape_pn))
+        shape *= self.alpha.reshape(list(np.shape(self.alpha))+[1]*len(shape_pn))
         shape = np.sum(shape, axis=0)
         return self.L * shape / self.Raxis
 
@@ -1043,11 +1043,14 @@ class Lao85(Profile):
         f * df/dpsi as a function of normalised psi. 0 outside core.
         Calculate ffprimeshape inside the core only.
         """
+        pn_ = np.clip(np.array(pn))
+        shape_pn = np.shape(pn_)
+
         shape = (
-            np.clip(np.array(pn), 0.0, 1.0)[np.newaxis, :]
-            ** self.beta_exp[:, np.newaxis]
+            pn_[np.newaxis]
+            **self.beta_exp.reshape(list(np.shape(self.beta_exp))+[1]*len(shape_pn))
         )
-        shape *= self.beta[:, np.newaxis]
+        shape *= self.beta.reshape(list(np.shape(self.beta))+[1]*len(shape_pn))
         shape = np.sum(shape, axis=0)
         return self.L * shape * self.Raxis
 
@@ -1059,12 +1062,15 @@ class Lao85(Profile):
         ----------
         pn : np.array of normalised psi values
         """
-        pn = np.array(pn)[np.newaxis, :]
+
+        pn_ = np.clip(np.array(pn))[np.newaxis]
+        shape_pn = np.shape(pn_)
+
         ones = np.ones_like(pn)
         integrated_coeffs = self.alpha / np.arange(1, len(self.alpha_exp) + 1)
         norm_pressure = np.sum(
-            integrated_coeffs[:, np.newaxis]
-            * (ones - pn ** (self.alpha_exp[:, np.newaxis] + 1)),
+            integrated_coeffs.reshape(list(np.shape(integrated_coeffs))+[1]*len(shape_pn))
+            * (ones - pn ** (self.alpha_exp.reshape(list(np.shape(self.alpha_exp))+[1]*len(shape_pn)) + 1)),
             axis=0,
         )
         pressure = self.L * norm_pressure * (self.psi_axis - self.psi_bndry)
