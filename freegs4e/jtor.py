@@ -923,16 +923,20 @@ class Lao85(Profile):
 
         # Set parameters for later use
         self.alpha = np.array(alpha)
+        self.alpha_exp = np.arange(0, len(self.alpha))
         self.alpha_logic = alpha_logic
         if alpha_logic:
             self.alpha = np.concatenate((self.alpha, [-np.sum(self.alpha)]))
-        self.alpha_exp = np.arange(0, len(self.alpha))
+            self.alpha_exp = np.concatenate(
+                (self.alpha_exp, [len(self.alpha)])
+            )
 
         self.beta = np.array(beta)
+        self.beta_exp = np.arange(0, len(self.beta))
         self.beta_logic = beta_logic
         if beta_logic:
             self.beta = np.concatenate((self.beta, [-np.sum(self.beta)]))
-        self.beta_exp = np.arange(0, len(self.beta))
+            self.beta_exp = np.concatenate((self.beta_exp, [len(self.beta)]))
 
         self.Ip = Ip
         self.Ip_logic = Ip_logic
