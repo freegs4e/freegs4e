@@ -218,6 +218,7 @@ def plotProbes(
 
     """
 
+    import matplotlib as mpl
     import matplotlib.pyplot as plt
 
     # create axis if none exists
@@ -260,6 +261,19 @@ def plotProbes(
             marker="o",
             s=3,
         )
+
+        # # pickup orientation
+
+        # # Calculate the angle in radians and convert to degrees
+        # angle_radians = np.arctan2(probes.pickup_or[:, 2], probes.pickup_or[:, 0])
+        # angle_degrees = np.degrees(angle_radians)
+
+        # # make a markerstyle class instance and modify its transform prop
+        # for i in range(0, len(probes.pickup_pos[:, 0])):
+        #     t = mpl.markers.MarkerStyle(marker=u'$\u21A6$')  # "$>$"  u'$\u2192$
+        #     t._transform = t.get_transform().rotate_deg(angle_degrees[i])
+        #     axis.scatter(probes.pickup_pos[i, 0], probes.pickup_pos[i, 2], marker=t, s=40, color="brown")
+
     if show:
         plt.legend()
         plt.show()
