@@ -924,15 +924,12 @@ class Lao85(Profile):
         # Set parameters for later use
         self.alpha = np.array(alpha)
         self.alpha_logic = alpha_logic
-        if alpha_logic:
-            self.alpha = np.concatenate((self.alpha, [-np.sum(self.alpha)]))
-        self.alpha_exp = np.arange(0, len(self.alpha))
 
         self.beta = np.array(beta)
         self.beta_logic = beta_logic
-        if beta_logic:
-            self.beta = np.concatenate((self.beta, [-np.sum(self.beta)]))
-        self.beta_exp = np.arange(0, len(self.beta))
+
+        # Initialize
+        self.initialize_profile()
 
         self.Ip = Ip
         self.Ip_logic = Ip_logic
@@ -944,6 +941,17 @@ class Lao85(Profile):
 
         # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
+
+    def initialize_profile(
+        self,
+    ):
+        # note this relies on the logics
+        if self.alpha_logic:
+            self.alpha = np.concatenate((self.alpha, [-np.sum(self.alpha)]))
+        self.alpha_exp = np.arange(0, len(self.alpha))
+        if self.beta_logic:
+            self.beta = np.concatenate((self.beta, [-np.sum(self.beta)]))
+        self.beta_exp = np.arange(0, len(self.beta))
 
     def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
         """
@@ -1030,11 +1038,15 @@ class Lao85(Profile):
         dp/dpsi as a function of normalised psi. 0 outside core
         Calculate pprimeshape inside the core only
         """
-        shape = (
-            np.clip(np.array(pn), 0.0, 1.0)[np.newaxis, :]
-            ** self.alpha_exp[:, np.newaxis]
+        pn_ = np.clip(np.array(pn), 0, 1)
+        shape_pn = np.shape(pn_)
+
+        shape = pn_[np.newaxis] ** self.alpha_exp.reshape(
+            list(np.shape(self.alpha_exp)) + [1] * len(shape_pn)
         )
-        shape *= self.alpha[:, np.newaxis]
+        shape *= self.alpha.reshape(
+            list(np.shape(self.alpha)) + [1] * len(shape_pn)
+        )
         shape = np.sum(shape, axis=0)
         return self.L * shape / self.Raxis
 
@@ -1043,11 +1055,15 @@ class Lao85(Profile):
         f * df/dpsi as a function of normalised psi. 0 outside core.
         Calculate ffprimeshape inside the core only.
         """
-        shape = (
-            np.clip(np.array(pn), 0.0, 1.0)[np.newaxis, :]
-            ** self.beta_exp[:, np.newaxis]
+        pn_ = np.clip(np.array(pn), 0, 1)
+        shape_pn = np.shape(pn_)
+
+        shape = pn_[np.newaxis] ** self.beta_exp.reshape(
+            list(np.shape(self.beta_exp)) + [1] * len(shape_pn)
         )
-        shape *= self.beta[:, np.newaxis]
+        shape *= self.beta.reshape(
+            list(np.shape(self.beta)) + [1] * len(shape_pn)
+        )
         shape = np.sum(shape, axis=0)
         return self.L * shape * self.Raxis
 
@@ -1059,12 +1075,26 @@ class Lao85(Profile):
         ----------
         pn : np.array of normalised psi values
         """
-        pn = np.array(pn)[np.newaxis, :]
+
+        pn_ = np.clip(np.array(pn), 0, 1)[np.newaxis]
+        shape_pn = np.shape(pn_)
+
         ones = np.ones_like(pn)
         integrated_coeffs = self.alpha / np.arange(1, len(self.alpha_exp) + 1)
         norm_pressure = np.sum(
-            integrated_coeffs[:, np.newaxis]
-            * (ones - pn ** (self.alpha_exp[:, np.newaxis] + 1)),
+            integrated_coeffs.reshape(
+                list(np.shape(integrated_coeffs)) + [1] * len(shape_pn)
+            )
+            * (
+                ones
+                - pn
+                ** (
+                    self.alpha_exp.reshape(
+                        list(np.shape(self.alpha_exp)) + [1] * len(shape_pn)
+                    )
+                    + 1
+                )
+            ),
             axis=0,
         )
         pressure = self.L * norm_pressure * (self.psi_axis - self.psi_bndry)
