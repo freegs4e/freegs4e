@@ -924,15 +924,12 @@ class Lao85(Profile):
         # Set parameters for later use
         self.alpha = np.array(alpha)
         self.alpha_logic = alpha_logic
-        if alpha_logic:
-            self.alpha = np.concatenate((self.alpha, [-np.sum(self.alpha)]))
-        self.alpha_exp = np.arange(0, len(self.alpha))
-
+        
         self.beta = np.array(beta)
         self.beta_logic = beta_logic
-        if beta_logic:
-            self.beta = np.concatenate((self.beta, [-np.sum(self.beta)]))
-        self.beta_exp = np.arange(0, len(self.beta))
+
+        # Initialize
+        self.initialize_profile()
 
         self.Ip = Ip
         self.Ip_logic = Ip_logic
@@ -944,6 +941,15 @@ class Lao85(Profile):
 
         # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
+
+    def initialize_profile(self,):
+        # note this relies on the logics
+        if self.alpha_logic:
+            self.alpha = np.concatenate((self.alpha, [-np.sum(self.alpha)]))
+        self.alpha_exp = np.arange(0, len(self.alpha))
+        if self.beta_logic:
+            self.beta = np.concatenate((self.beta, [-np.sum(self.beta)]))
+        self.beta_exp = np.arange(0, len(self.beta))
 
     def Jtor_part2(self, R, Z, psi, psi_axis, psi_bndry, mask):
         """
