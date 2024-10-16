@@ -924,7 +924,7 @@ class Lao85(Profile):
         # Set parameters for later use
         self.alpha = np.array(alpha)
         self.alpha_logic = alpha_logic
-        
+
         self.beta = np.array(beta)
         self.beta_logic = beta_logic
 
@@ -942,7 +942,9 @@ class Lao85(Profile):
         # parameter to indicate that this is coming from FreeGS4E
         self.fast = True
 
-    def initialize_profile(self,):
+    def initialize_profile(
+        self,
+    ):
         # note this relies on the logics
         if self.alpha_logic:
             self.alpha = np.concatenate((self.alpha, [-np.sum(self.alpha)]))
