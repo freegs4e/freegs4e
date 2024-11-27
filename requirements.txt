@@ -3,3 +3,4 @@ scipy~=1.9
 matplotlib~=3.0
 h5py~=3.11
 numba~=0.60
+Shapely~=2.0.6
