@@ -291,7 +291,7 @@ class Coil:
 
             minor_radius = np.sqrt(self.area / np.pi)
 
-            circle = plt.Circle((self.R, self.Z), minor_radius, color="b")
+            circle = plt.Circle((self.R, self.Z), minor_radius, facecolor="grey", edgecolor="k")
             axis.add_artist(circle)
 
         return axis
