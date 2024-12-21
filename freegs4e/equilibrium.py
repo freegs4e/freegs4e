@@ -670,7 +670,7 @@ class Equilibrium:
         """The major radius R of magnetic major radius"""
         return self.magneticAxis()[0]
 
-    def geometricAxis(self, npoints=20):
+    def geometricAxis(self, npoints=300):
         """Locates geometric axis, returning [R,Z]. Calculated as the centre
         of a large number of points on the separatrix equally
         distributed in angle from the magnetic axis.
@@ -678,14 +678,14 @@ class Equilibrium:
         separatrix = self.separatrix(ntheta=npoints)  # Array [:,2]
         return np.mean(separatrix, axis=0)
 
-    def Rgeometric(self, npoints=20):
+    def Rgeometric(self, npoints=300):
         """Locates major radius R of the geometric major radius. Calculated
         as the centre of a large number of points on the separatrix
         equally distributed in angle from the magnetic axis.
         """
         return self.geometricAxis(npoints=npoints)[0]
 
-    def minorRadius(self, npoints=20):
+    def minorRadius(self, npoints=300):
         """Calculates minor radius of plasma as the average distance from the
         geometric major radius to a number of points along the
         separatrix
@@ -701,7 +701,7 @@ class Equilibrium:
             )
         )  # dZ^2
 
-    def geometricElongation(self, npoints=20):
+    def geometricElongation(self, npoints=300):
         """Calculates the elongation of a plasma using the range of R and Z of
         the separatrix
 
@@ -712,13 +712,13 @@ class Equilibrium:
             max(separatrix[:, 0]) - min(separatrix[:, 0])
         )
 
-    def aspectRatio(self, npoints=20):
+    def aspectRatio(self, npoints=300):
         """Calculates the plasma aspect ratio"""
         return self.Rgeometric(npoints=npoints) / self.minorRadius(
             npoints=npoints
         )
 
-    def effectiveElongation(self, R_wall_inner, R_wall_outer, npoints=300):
+    def effectiveElongation(self, npoints=300):
         """Calculates plasma effective elongation using the plasma volume"""
         return self.plasmaVolume() / (
             2.0
@@ -777,7 +777,7 @@ class Equilibrium:
         integral = romb(romb(B_polvals_2 * dV))
         return 2 * integral / ((mu0 * Ip) ** 2 * R_mag)
 
-    def internalInductance3(self, R_wall_inner, R_wall_outer, npoints=300):
+    def internalInductance3(self, npoints=300):
         """Calculates li3 plasma internal inductance"""
 
         R = self.R
