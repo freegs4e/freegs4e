@@ -279,7 +279,9 @@ class Equilibrium:
         # Volume element
         dV = 2.0 * pi * self.R * dR * dZ
 
-        if self.mask_inside_limiter is not None:  # Only include points in the core
+        if (
+            self.mask_inside_limiter is not None
+        ):  # Only include points in the core
             dV *= self.mask_inside_limiter
 
         # Integrate volume in 2D
@@ -326,7 +328,10 @@ class Equilibrium:
         if self.mask_inside_limiter is not None:
             # Get the values of the core mask at the requested R,Z locations
             # This is 1 in the core, 0 outside
-            fpol = fpol * self.mask_inside_limiter + (1.0 - self.mask_inside_limiter) * self.fvac()
+            fpol = (
+                fpol * self.mask_inside_limiter
+                + (1.0 - self.mask_inside_limiter) * self.fvac()
+            )
 
         return fpol / R
 
@@ -735,7 +740,9 @@ class Equilibrium:
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
 
-        if self.mask_inside_limiter is not None:  # Only include points in the core
+        if (
+            self.mask_inside_limiter is not None
+        ):  # Only include points in the core
             dV *= self.mask_inside_limiter
 
         Ip = self.plasmaCurrent()
@@ -759,7 +766,9 @@ class Equilibrium:
         dR = R[1, 0] - R[0, 0]
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
-        if self.mask_inside_limiter is not None:  # Only include points in the core
+        if (
+            self.mask_inside_limiter is not None
+        ):  # Only include points in the core
             dV *= self.mask_inside_limiter
 
         Ip = self.plasmaCurrent()
@@ -780,7 +789,9 @@ class Equilibrium:
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
 
-        if self.mask_inside_limiter is not None:  # Only include points in the core
+        if (
+            self.mask_inside_limiter is not None
+        ):  # Only include points in the core
             dV *= self.mask_inside_limiter
 
         Ip = self.plasmaCurrent()
@@ -813,7 +824,9 @@ class Equilibrium:
         # Plasma pressure
         pressure = self.pressure(psi_norm)
 
-        if self.mask_inside_limiter is not None:  # Only include points in the core
+        if (
+            self.mask_inside_limiter is not None
+        ):  # Only include points in the core
             dV *= self.mask_inside_limiter
 
         pressure_integral = romb(romb(pressure * dV))
@@ -844,7 +857,9 @@ class Equilibrium:
         # Plasma pressure
         pressure = self.pressure(psi_norm)
 
-        if self.mask_inside_limiter is not None:  # Only include points in the core
+        if (
+            self.mask_inside_limiter is not None
+        ):  # Only include points in the core
             dV *= self.mask_inside_limiter
 
         pressure_integral = romb(romb(pressure * dV))
