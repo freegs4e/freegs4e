@@ -257,9 +257,14 @@ class Equilibrium:
 
         # Plasma pressure
         pressure = self.pressure(psi_norm)
-        if self.mask_inside_limiter is not None:
-            # If there is a masking function (X-points, limiters)
-            pressure *= self.mask_inside_limiter
+        try:
+            pressure *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         # Integrate pressure in 2D
         return (
@@ -279,10 +284,14 @@ class Equilibrium:
         # Volume element
         dV = 2.0 * pi * self.R * dR * dZ
 
-        if (
-            self.mask_inside_limiter is not None
-        ):  # Only include points in the core
-            dV *= self.mask_inside_limiter
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         # Integrate volume in 2D
         return romb(romb(dV))
@@ -325,13 +334,17 @@ class Equilibrium:
         # Get f = R * Btor in the core. May be invalid outside the core
         fpol = self.fpol(psi_norm)
 
-        if self.mask_inside_limiter is not None:
-            # Get the values of the core mask at the requested R,Z locations
-            # This is 1 in the core, 0 outside
+        try:
             fpol = (
-                fpol * self.mask_inside_limiter
-                + (1.0 - self.mask_inside_limiter) * self.fvac()
+                fpol * self._profiles.limiter_core_mask
+                + (1.0 - self._profiles.limiter_core_mask) * self.fvac()
             )
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         return fpol / R
 
@@ -740,10 +753,14 @@ class Equilibrium:
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
 
-        if (
-            self.mask_inside_limiter is not None
-        ):  # Only include points in the core
-            dV *= self.mask_inside_limiter
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         Ip = self.plasmaCurrent()
         R_geo = self.Rgeometric(npoints=npoints)
@@ -766,10 +783,15 @@ class Equilibrium:
         dR = R[1, 0] - R[0, 0]
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
-        if (
-            self.mask_inside_limiter is not None
-        ):  # Only include points in the core
-            dV *= self.mask_inside_limiter
+
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         Ip = self.plasmaCurrent()
         R_mag = self.Rmagnetic()
@@ -789,10 +811,14 @@ class Equilibrium:
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
 
-        if (
-            self.mask_inside_limiter is not None
-        ):  # Only include points in the core
-            dV *= self.mask_inside_limiter
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         Ip = self.plasmaCurrent()
         R_geo = self.Rgeometric(npoints=npoints)
@@ -824,10 +850,14 @@ class Equilibrium:
         # Plasma pressure
         pressure = self.pressure(psi_norm)
 
-        if (
-            self.mask_inside_limiter is not None
-        ):  # Only include points in the core
-            dV *= self.mask_inside_limiter
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         pressure_integral = romb(romb(pressure * dV))
         field_integral_pol = romb(romb(B_polvals_2 * dV))
@@ -857,10 +887,14 @@ class Equilibrium:
         # Plasma pressure
         pressure = self.pressure(psi_norm)
 
-        if (
-            self.mask_inside_limiter is not None
-        ):  # Only include points in the core
-            dV *= self.mask_inside_limiter
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         pressure_integral = romb(romb(pressure * dV))
 
