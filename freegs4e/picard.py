@@ -24,6 +24,7 @@ def solve(
     eq,
     profiles,
     constrain=None,
+    verbose=False,
     rtol=1e-3,
     atol=1e-10,
     blend=0.0,
@@ -53,6 +54,8 @@ def solve(
                If this limit is exceeded then a RuntimeError is raised.
     """
 
+    log = []
+
     if constrain is not None:
         # Set the coil currents to get X-points in desired locations
         constrain(eq)
@@ -74,6 +77,10 @@ def solve(
     psi_maxchange_iterations, psi_relchange_iterations = [], []
     # Start main loop
     while True:
+
+        log.append("-----")
+        log.append("Picard iteration: " + str(iteration))
+
         if show:
             try:
                 # Plot state of plasma equilibrium
@@ -110,6 +117,13 @@ def solve(
         psi_maxchange = amax(abs(psi_change))
         psi_relchange = psi_maxchange / (amax(psi) - amin(psi))
 
+        log.append("...relative error =  " + str(psi_relchange))
+
+        if verbose:
+            for x in log:
+                print(x)
+        log = []
+
         psi_maxchange_iterations.append(psi_maxchange)
         psi_relchange_iterations.append(psi_relchange)
 
@@ -127,7 +141,7 @@ def solve(
         iteration += 1
         if maxits and iteration > maxits:
             raise RuntimeError(
-                "Picard iteration failed to converge (too many iterations)"
+                "Inverse solver failed to converge to requested tolerance."
             )
 
         eq._profiles = profiles

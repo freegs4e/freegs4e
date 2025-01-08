@@ -22,7 +22,9 @@ along with FreeGS4E.  If not, see <http://www.gnu.org/licenses/>.
 
 import warnings
 
+import matplotlib.pyplot as plt
 import numpy as np
+import shapely as sh
 from numpy import array, exp, linspace, meshgrid, pi
 from scipy import interpolate
 from scipy.integrate import romb  # Romberg integration
@@ -255,9 +257,14 @@ class Equilibrium:
 
         # Plasma pressure
         pressure = self.pressure(psi_norm)
-        if self.mask is not None:
-            # If there is a masking function (X-points, limiters)
-            pressure *= self.mask
+        try:
+            pressure *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         # Integrate pressure in 2D
         return (
@@ -277,8 +284,14 @@ class Equilibrium:
         # Volume element
         dV = 2.0 * pi * self.R * dR * dZ
 
-        if self.mask is not None:  # Only include points in the core
-            dV *= self.mask
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         # Integrate volume in 2D
         return romb(romb(dV))
@@ -321,11 +334,17 @@ class Equilibrium:
         # Get f = R * Btor in the core. May be invalid outside the core
         fpol = self.fpol(psi_norm)
 
-        if self.mask is not None:
-            # Get the values of the core mask at the requested R,Z locations
-            # This is 1 in the core, 0 outside
-            mask = self.mask_func(R, Z, grid=False)
-            fpol = fpol * mask + (1.0 - mask) * self.fvac()
+        try:
+            fpol = (
+                fpol * self._profiles.limiter_core_mask
+                + (1.0 - self._profiles.limiter_core_mask) * self.fvac()
+            )
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         return fpol / R
 
@@ -664,7 +683,7 @@ class Equilibrium:
         """The major radius R of magnetic major radius"""
         return self.magneticAxis()[0]
 
-    def geometricAxis(self, npoints=20):
+    def geometricAxis(self, npoints=300):
         """Locates geometric axis, returning [R,Z]. Calculated as the centre
         of a large number of points on the separatrix equally
         distributed in angle from the magnetic axis.
@@ -672,14 +691,14 @@ class Equilibrium:
         separatrix = self.separatrix(ntheta=npoints)  # Array [:,2]
         return np.mean(separatrix, axis=0)
 
-    def Rgeometric(self, npoints=20):
+    def Rgeometric(self, npoints=300):
         """Locates major radius R of the geometric major radius. Calculated
         as the centre of a large number of points on the separatrix
         equally distributed in angle from the magnetic axis.
         """
         return self.geometricAxis(npoints=npoints)[0]
 
-    def minorRadius(self, npoints=20):
+    def minorRadius(self, npoints=300):
         """Calculates minor radius of plasma as the average distance from the
         geometric major radius to a number of points along the
         separatrix
@@ -695,7 +714,7 @@ class Equilibrium:
             )
         )  # dZ^2
 
-    def geometricElongation(self, npoints=20):
+    def geometricElongation(self, npoints=300):
         """Calculates the elongation of a plasma using the range of R and Z of
         the separatrix
 
@@ -706,13 +725,13 @@ class Equilibrium:
             max(separatrix[:, 0]) - min(separatrix[:, 0])
         )
 
-    def aspectRatio(self, npoints=20):
+    def aspectRatio(self, npoints=300):
         """Calculates the plasma aspect ratio"""
         return self.Rgeometric(npoints=npoints) / self.minorRadius(
             npoints=npoints
         )
 
-    def effectiveElongation(self, R_wall_inner, R_wall_outer, npoints=300):
+    def effectiveElongation(self, npoints=300):
         """Calculates plasma effective elongation using the plasma volume"""
         return self.plasmaVolume() / (
             2.0
@@ -734,8 +753,14 @@ class Equilibrium:
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
 
-        if self.mask is not None:  # Only include points in the core
-            dV *= self.mask
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         Ip = self.plasmaCurrent()
         R_geo = self.Rgeometric(npoints=npoints)
@@ -758,8 +783,15 @@ class Equilibrium:
         dR = R[1, 0] - R[0, 0]
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
-        if self.mask is not None:  # Only include points in the core
-            dV *= self.mask
+
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         Ip = self.plasmaCurrent()
         R_mag = self.Rmagnetic()
@@ -767,7 +799,7 @@ class Equilibrium:
         integral = romb(romb(B_polvals_2 * dV))
         return 2 * integral / ((mu0 * Ip) ** 2 * R_mag)
 
-    def internalInductance3(self, R_wall_inner, R_wall_outer, npoints=300):
+    def internalInductance3(self, npoints=300):
         """Calculates li3 plasma internal inductance"""
 
         R = self.R
@@ -779,8 +811,14 @@ class Equilibrium:
         dZ = Z[0, 1] - Z[0, 0]
         dV = 2.0 * np.pi * R * dR * dZ
 
-        if self.mask is not None:  # Only include points in the core
-            dV *= self.mask
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         Ip = self.plasmaCurrent()
         R_geo = self.Rgeometric(npoints=npoints)
@@ -812,8 +850,14 @@ class Equilibrium:
         # Plasma pressure
         pressure = self.pressure(psi_norm)
 
-        if self.mask is not None:  # Only include points in the core
-            dV *= self.mask
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         pressure_integral = romb(romb(pressure * dV))
         field_integral_pol = romb(romb(B_polvals_2 * dV))
@@ -843,8 +887,14 @@ class Equilibrium:
         # Plasma pressure
         pressure = self.pressure(psi_norm)
 
-        if self.mask is not None:  # Only include points in the core
-            dV *= self.mask
+        try:
+            dV *= self._profiles.limiter_core_mask
+        except AttributeError as e:
+            print(e)
+            warnings.warn(
+                "The core mask is not in place. You need to solve for the equilibrium first!"
+            )
+            raise e
 
         pressure_integral = romb(romb(pressure * dV))
 
@@ -859,6 +909,64 @@ class Equilibrium:
         return 1.0 / (
             (1.0 / self.poloidalBeta2()) + (1.0 / self.toroidalBeta())
         )
+
+    def strikepoints(self):
+        """
+            This function can be used to find the strikepoints of an equilibrium
+            using the:
+
+            - R and Z grids (2D)
+            - psi_total (2D) (i.e. the poloidal flux map)
+            - psi_boundary (single value)
+            - wall coordinates (N x 2)
+
+        It should find the intersection between any points on the psi_boundary contour
+        of psi_total and the wall of the tokamak.
+        """
+
+        # find contour object for psi_boundary
+        if self._profiles.flag_limiter:
+            cs = plt.contour(
+                self.R, self.Z, self.psi(), levels=[self._profiles.psi_bndry]
+            )
+        else:
+            cs = plt.contour(
+                self.R, self.Z, self.psi(), levels=[self._profiles.xpt[0][2]]
+            )
+        plt.close()  # this isn't the most elegant but we don't need the plot itself
+
+        # for each item in the contour object there's a list of points in (r,z) (i.e. a line)
+        psi_boundary_lines = []
+        for i, item in enumerate(cs.allsegs[0]):
+            psi_boundary_lines.append(item)
+
+        # use the shapely package to find where each psi_boundary_line intersects the wall (or not)
+        strikes = []
+        wall = np.array([self.tokamak.wall.R, self.tokamak.wall.Z]).T
+        curve1 = sh.LineString(wall)
+        for j, line in enumerate(psi_boundary_lines):
+            curve2 = sh.LineString(line)
+
+            # find the intersection points
+            intersection = curve2.intersection(curve1)
+
+            # extract intersection points
+            if intersection.geom_type == "Point":
+                strikes.append(np.squeeze(np.array(intersection.xy).T))
+            elif intersection.geom_type == "MultiPoint":
+                strikes.append(
+                    np.squeeze(
+                        np.array([geom.xy for geom in intersection.geoms])
+                    )
+                )
+
+        # check how many strikepoints
+        if len(strikes) == 0:
+            out = None
+        else:
+            out = np.concatenate(strikes, axis=0)
+
+        return out
 
 
 def refine(eq, nx=None, ny=None):

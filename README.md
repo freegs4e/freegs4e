@@ -1,99 +1,53 @@
-FreeGS4E: Free boundary Grad-Shafranov solver for time evolution
-===========================================
 
-FreeGS4E is a package based on [FreeGS](https://github.com/freegs-plasma/freegs), which calculates plasma equilibria for tokamak fusion experiments by solving the free boundary Grad-Shafranov equation. FreeGS4E is forked from FreeGS 0.6.1 and includes some performance optimisations that may also limit the use cases.
+# FreeGS4E: Free-boundary Grad-Shafranov for Evolution
 
-The primary use case for FreeGS4E is to provide a fast equilibrium solver for the FreeGSNKE code. This has resulted in some changes to the FreeGS codebase that mean FreeGS4E is no longer a drop-in replacement for FreeGS. FreeGS4E is also not intended to be a standalone equilibrium solver, and some features have been removed to improve performance. Users looking for a static equilibrium solver should use FreeGS.
+FreeGS4E is a package forked from [FreeGS](https://github.com/freegs-plasma/freegs) (v0.6.1), which has the capability to solve the static inverse free-boundary Grad-Shafranov problem for plasma equilibria in tokamak devices.
 
-Installing
-----------
+Its intended usage is as an underlying solver for the dynamic (time-dependent) free-boundary equilibrium solver FreeGSNKE.
 
-FreeGS4E is available on PyPI and can be installed with pip:
+The addtion and removal of certain features within FreeGS, as well as some performance optimisation, were neccesary to enable this and so FreeGS4E has now diverged significantly from original FreeGS codebase.
 
-```bash
-pip install freegs4e
-```
-
-To build from source:
+Therefore, FreeGS4E is **not intended to be a drop in replacement solver for FreeGS** but rather is designed for use explicitly **within** FreeGSNKE.
 
 
-1. Download this repository
-   ```bash
-   git clone https://github.com/freegs4e/freegs4e
-   ```
-2. Install with pip
-   ```bash
-   cd freegs4e
-   pip install .
-   ```
+## Installation
 
-Documentation
--------------
+Given FreeGS4E is not a standalone equilibrium solver, we recommend following the installation instructions for FreeGSNKE (which will install FreeGS4E automatically). 
 
-The FreeGS manual is in the `docs` subdirectory.
+If you would, however, like to contribute to FreeGS4E directly, please see the installation instructions in the section on contributing below.
 
-Examples
---------
+## Getting started
 
-The Jupyter notebooks contain examples with additional notes
+All of the examples for getting started can be found within the `freegsnke/examples` directory.
 
-* MAST-example.ipynb 
 
-There are also some Python scripts to run short tests
-and examples
+## Contributing
 
-    $ python 01-freeboundary.py
+We welcome contributions including **bug fixes** or **new feature requests** for FreeGS4E, though we would suggest making these via issues on the FreeGSNKE homepage.
 
-This solves a free boundary problem, specifying the desired location of two X-points.
-Writes the equilibrium to a G-EQDSK file "lsn.geqdsk"
-
-    $ python 02-read-geqdsk.py
-
-Reads in the file "lsn.geqdsk", inferring the coil currents from the plasma boundary
-and profiles in the G-EQDSK file.
-
-    $ python 03-mast.py
-
-Calculates a double-null (CDND) equilibrium for MAST from scratch. Writes solution to
-G-EQDSK file "mast.geqdsk"
-
-    $ python 04-read-mast-geqdsk.py
-
-Reads the file "mast.geqdsk", inferring the coil currents.
-
-    $ python 05-fixed-boundary.py 
-
-This example solves a fixed boundary problem, in which the square edges of the domain
-are fixed. The plasma pressure on axis and plasma current are fixed.
-
-    $ python 06-xpoints.py
-
-This demonstrates the coil current control code, finding X-points, and marking core region
-These routines are used inside the free boundary solver
-
-Contributing
-------------
-
-To install FreeGS4E for development, clone the repository and install the package in editable mode with the development dependencies:
+If you would, however, like to install FreeGS4E separately for development purposes, clone this repository, and install the package in editable mode with the development dependencies:
 
 ```bash
-git clone https://github.com/freegs4e/freegs4e
+
+git clone  https://github.com/freegs4e/freegs4e
+
 cd freegs4e
-pip install -e ".[dev]"
+
+pip install  -e  ".[dev]"
+
 ```
 
-Changes to the `main` branch must be made through pull requests.
+Changes to the `main` branch must be made via pull request. If you don't have write access to the repository, pull requests through GitHub forks are welcome.
 
-If you don't have write access to the repository, pull requests through GitHub forks are welcome.
-
-Pre-commit hooks are used to ensure code quality. To install the pre-commit hooks, run:
+Pre-commit hooks are used to ensure code quality so do make sure you install the following pre-commit hooks and run them prior submitting pull requests:
 
 ```bash
+
 pre-commit install
+
 ```
 
-License
--------
+## License
 
     Copyright 2024 Nicola C. Amorisco, George K. Holt, Adriano Agnello, and other contributors.
 
@@ -116,15 +70,3 @@ License
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-References
-----------
-
-* YoungMu Jeon, [Development of a free boundary Tokamak Equlibrium Solver](http://link.springer.com/article/10.3938/jkps.67.843)  [arXiv:1503.03135](https://arxiv.org/abs/1503.03135)
-* S.Jardin "Computational Methods in Plasma Physics" CRC Press
-
-
-Versions
---------
-
-0.1.0 
