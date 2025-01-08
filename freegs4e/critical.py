@@ -279,6 +279,8 @@ def find_critical(
     if len(xpoint) > 0 and (signIp is not None):
         # select xpoint with the correct ordering wrt Ip
         xpoint = xpoint[((xpoint[:, 2] - opoint[:1, 2]) * signIp) < 0]
+        # also select xpoints that are not on the z=0 axis
+        # xpoint = xpoint[np.abs(xpoint[:,1])>.1]
     if len(xpoint) > 0:
         # check distance to opoint and in case discard xpoints on non-monotonic LOS
         # closer_xpoint = np.argmin(np.linalg.norm((xpoint-opoint[:1])[:,:2], axis=-1))
@@ -467,7 +469,7 @@ def discard_xpoints_f(R, Z, psi, opoint, xpt):
     # for xpt in xpoint:
     Rx, Zx, Px = xpt
 
-    num = int(max((np.abs(Rx - Ro)) / dR, (np.abs(Zx - Zo)) / dZ) + 1)
+    num = int(max((np.abs(Rx - Ro)) / dR, (np.abs(Zx - Zo)) / dZ) + 2)
     # print('num ', num)
 
     # print('num')
