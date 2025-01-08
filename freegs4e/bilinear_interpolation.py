@@ -3,6 +3,26 @@ import numpy as np
 
 #
 def biliint(R, Z, psi, points):
+    """Simple bilinear interpolation of 2d map
+
+    Parameters
+    ----------
+    R : np.array
+        R coordinates on 2d grid
+    Z : np.array
+        Z coordinates on 2d grid
+    psi : np.array
+        function values on 2d grid
+    points : np.array
+        coordinates where the interpolation is sought
+        shape (2, whatever)
+
+    Returns
+    -------
+    np.array
+        interpolated values, same shape as points: (1, whatever)
+    """
+
     R1d = R[:, :1]
     Z1d = Z[:1, :]
     dR = R[1, 0] - R[0, 0]
