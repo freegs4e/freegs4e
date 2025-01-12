@@ -10,7 +10,7 @@ License
 
 FreeGS4E is derived from FreeGS and distributed under the same license: the GNU Lesser General Public License version 3.
 
-Copyright 2024 Nicola C. Amorisco, George K. Holt, Adriano Agnello and other contributors.
+Copyright 2025 Nicola C. Amorisco, George K. Holt, Adriano Agnello and other contributors.
 
 The original FreeGS license is as follows:
 
