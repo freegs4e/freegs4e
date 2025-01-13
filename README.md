@@ -29,7 +29,7 @@ If you would, however, like to install FreeGS4E separately for development purpo
 
 ```bash
 
-git clone  https://github.com/freegs4e/freegs4e
+git clone git@github.com:FusionComputingLab/freegs4e.git
 
 cd freegs4e
 
