@@ -910,7 +910,7 @@ class Equilibrium:
             (1.0 / self.poloidalBeta2()) + (1.0 / self.toroidalBeta())
         )
 
-    def find_strikepoints(R, Z, psi_total, psi_boundary, limiter):
+    def find_strikepoints(self, R, Z, psi_total, psi_boundary, limiter):
         """
         This function can be used to find the strikepoints of an equilibrium using
         the:
@@ -958,7 +958,7 @@ class Equilibrium:
         return out
 
 
-    def get_lower_strike(eq,r_min = 0.5, z_max = -1.4 ):
+    def get_lower_strike(self, r_min = 0.5, z_max = -1.4 ):
         """ 
         Find lowest strike point of equilibrium. 
         Based on code in Freegsnke example31_simulate_mastu_shot notebook
@@ -982,11 +982,11 @@ class Equilibrium:
         """
         # (lower right hand corner of domain in this case)
         # freegsnke strikepoints
-        s = find_strikepoints(R=eq.R, 
-                            Z=eq.Z, 
-                            psi_total=eq.psi(), 
-                            psi_boundary=eq.psi_bndry, 
-                            limiter=np.array([eq.tokamak.limiter.R,eq.tokamak.limiter.Z]).T)
+        s = self.find_strikepoints(R=self.R, 
+                            Z=self.Z, 
+                            psi_total=self.psi(), 
+                            psi_boundary=self.psi_bndry, 
+                            limiter=np.array([self.tokamak.limiter.R, self.tokamak.limiter.Z]).T)
         s_r = s[:,0]
         s_z = s[:,1]
         ind = np.where((s_r > r_min) & (s_z < z_max))[0]
