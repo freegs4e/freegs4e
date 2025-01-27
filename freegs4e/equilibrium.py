@@ -918,49 +918,51 @@ class Equilibrium:
             - psi_total (2D) (i.e. the poloidal flux map)
             - psi_boundary (single value)
             - limiter/wall coordinates (N x 2)
-            
+
         It should find the intersection between any points on the psi_boundary contour
-        of psi_total and the wall of the tokamak. 
+        of psi_total and the wall of the tokamak.
 
         """
-        
+
         # find contour object for psi_boundary
         cs = plt.contour(R, Z, psi_total, levels=[psi_boundary])
-        plt.close() # this isn't the most elegant but we don't need the plot itself
-        
+        plt.close()  # this isn't the most elegant but we don't need the plot itself
+
         # for each item in the contour object there's a list of points in (r,z) (i.e. a line)
         psi_boundary_lines = []
         for i, item in enumerate(cs.allsegs[0]):
             psi_boundary_lines.append(item)
-        
-        
+
         # use the shapely package to find where each psi_boundary_line intersects the wall (or not)
         strikes = []
         curve1 = sh.LineString(limiter)
         for j, line in enumerate(psi_boundary_lines):
             curve2 = sh.LineString(line)
-        
+
             # find the intersection points
             intersection = curve2.intersection(curve1)
-        
+
             # extract intersection points
-            if intersection.geom_type == 'Point':
+            if intersection.geom_type == "Point":
                 strikes.append(np.squeeze(np.array(intersection.xy).T))
-            elif intersection.geom_type == 'MultiPoint':
-                strikes.append(np.squeeze(np.array([geom.xy for geom in intersection.geoms])))
+            elif intersection.geom_type == "MultiPoint":
+                strikes.append(
+                    np.squeeze(
+                        np.array([geom.xy for geom in intersection.geoms])
+                    )
+                )
 
         # check how many strikepoints
         if len(strikes) == 0:
             out = None
         else:
             out = np.concatenate(strikes, axis=0)
-            
+
         return out
 
-
-    def get_lower_strike(self, r_min = 0.5, z_max = -1.4 ):
-        """ 
-        Find lowest strike point of equilibrium. 
+    def get_lower_strike(self, r_min=0.5, z_max=-1.4):
+        """
+        Find lowest strike point of equilibrium.
         Based on code in Freegsnke example31_simulate_mastu_shot notebook
 
         Looks for strike points in lower right corner defined by r_min and z_max.
@@ -970,28 +972,32 @@ class Equilibrium:
         eq : freegsnke equilibrium
         r_min : float
             lower radius to look at. Select strike point with radius larger than this value
-        z_max : 
+        z_max :
             upper limit of z. Select strike point below this value
 
-        Returns : 
+        Returns :
         ---------
         strike_lower_r : float
             radial strike point
-        strike_lower_z : float 
+        strike_lower_z : float
             z value of strike point.
         """
         # (lower right hand corner of domain in this case)
         # freegsnke strikepoints
-        s = self.find_strikepoints(R=self.R, 
-                            Z=self.Z, 
-                            psi_total=self.psi(), 
-                            psi_boundary=self.psi_bndry, 
-                            limiter=np.array([self.tokamak.limiter.R, self.tokamak.limiter.Z]).T)
-        s_r = s[:,0]
-        s_z = s[:,1]
+        s = self.find_strikepoints(
+            R=self.R,
+            Z=self.Z,
+            psi_total=self.psi(),
+            psi_boundary=self.psi_bndry,
+            limiter=np.array(
+                [self.tokamak.limiter.R, self.tokamak.limiter.Z]
+            ).T,
+        )
+        s_r = s[:, 0]
+        s_z = s[:, 1]
         ind = np.where((s_r > r_min) & (s_z < z_max))[0]
-        if len(np.where((s_r > r_min) & (s_z < z_max))[0]) == 0:       
-            strike_lower = None,None
+        if len(np.where((s_r > r_min) & (s_z < z_max))[0]) == 0:
+            strike_lower = None, None
         else:
             strike_lower = np.array([s_r[ind[0]], s_z[ind[0]]])
 
