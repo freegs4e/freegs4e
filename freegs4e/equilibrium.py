@@ -910,29 +910,22 @@ class Equilibrium:
             (1.0 / self.poloidalBeta2()) + (1.0 / self.toroidalBeta())
         )
 
-    def strikepoints(self):
+    def find_strikepoints(self, R, Z, psi_total, psi_boundary, limiter):
         """
-            This function can be used to find the strikepoints of an equilibrium
-            using the:
-
+        This function can be used to find the strikepoints of an equilibrium using
+        the:
             - R and Z grids (2D)
             - psi_total (2D) (i.e. the poloidal flux map)
             - psi_boundary (single value)
-            - wall coordinates (N x 2)
+            - limiter/wall coordinates (N x 2)
 
         It should find the intersection between any points on the psi_boundary contour
         of psi_total and the wall of the tokamak.
+
         """
 
         # find contour object for psi_boundary
-        if self._profiles.flag_limiter:
-            cs = plt.contour(
-                self.R, self.Z, self.psi(), levels=[self._profiles.psi_bndry]
-            )
-        else:
-            cs = plt.contour(
-                self.R, self.Z, self.psi(), levels=[self._profiles.xpt[0][2]]
-            )
+        cs = plt.contour(R, Z, psi_total, levels=[psi_boundary])
         plt.close()  # this isn't the most elegant but we don't need the plot itself
 
         # for each item in the contour object there's a list of points in (r,z) (i.e. a line)
@@ -942,8 +935,7 @@ class Equilibrium:
 
         # use the shapely package to find where each psi_boundary_line intersects the wall (or not)
         strikes = []
-        wall = np.array([self.tokamak.wall.R, self.tokamak.wall.Z]).T
-        curve1 = sh.LineString(wall)
+        curve1 = sh.LineString(limiter)
         for j, line in enumerate(psi_boundary_lines):
             curve2 = sh.LineString(line)
 
@@ -967,6 +959,49 @@ class Equilibrium:
             out = np.concatenate(strikes, axis=0)
 
         return out
+
+    def get_lower_strike(self, r_min=0.5, z_max=-1.4):
+        """
+        Find lowest strike point of equilibrium.
+        Based on code in Freegsnke example31_simulate_mastu_shot notebook
+
+        Looks for strike points in lower right corner defined by r_min and z_max.
+
+        Inputs:
+        -------
+        eq : freegsnke equilibrium
+        r_min : float
+            lower radius to look at. Select strike point with radius larger than this value
+        z_max :
+            upper limit of z. Select strike point below this value
+
+        Returns :
+        ---------
+        strike_lower_r : float
+            radial strike point
+        strike_lower_z : float
+            z value of strike point.
+        """
+        # (lower right hand corner of domain in this case)
+        # freegsnke strikepoints
+        s = self.find_strikepoints(
+            R=self.R,
+            Z=self.Z,
+            psi_total=self.psi(),
+            psi_boundary=self.psi_bndry,
+            limiter=np.array(
+                [self.tokamak.limiter.R, self.tokamak.limiter.Z]
+            ).T,
+        )
+        s_r = s[:, 0]
+        s_z = s[:, 1]
+        ind = np.where((s_r > r_min) & (s_z < z_max))[0]
+        if len(np.where((s_r > r_min) & (s_z < z_max))[0]) == 0:
+            strike_lower = None, None
+        else:
+            strike_lower = np.array([s_r[ind[0]], s_z[ind[0]]])
+
+        return strike_lower[0], strike_lower[1]
 
 
 def refine(eq, nx=None, ny=None):

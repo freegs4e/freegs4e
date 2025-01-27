@@ -92,7 +92,7 @@ def plotEquilibrium(
 
     levels = linspace(amin(psi), amax(psi), 50)
 
-    axis.contour(eq.R, eq.Z, psi, levels=levels)
+    axis.contour(eq.R, eq.Z, psi, levels=levels, zorder=0)
     axis.set_aspect("equal")
     axis.set_xlabel("Major radius [m]")
     axis.set_ylabel("Height [m]")
