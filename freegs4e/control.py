@@ -14,44 +14,62 @@ from . import critical
 
 class constrain(object):
     """
-    Adjust coil currents using constraints. To use this class,
-    first create an instance by specifying the constraints
+    This class is used to adjust coil currents, according to some constraints,
+    durnig an inverse solve. 
+    
+    To use this class, create an instance by specfiying at least one of the 
+    following type of constaints:
+    
+    xpoints - A list of X-point locations [(R,Z), ...]
 
-    >>> controlsystem = constrain(xpoints = [(1.0, 1.1), (1.0,-1.0)])
+    isoflux - A list of isoflux tuple pairs [(R1,Z1,R2,Z2), ...]
 
-    controlsystem will now attempt to create x-points at
-    (R,Z) = (1.0, 1.1) and (1.0, -1.1) in any Equilibrium
+    psivals - A list of psi values/locations [(R,Z,psi), ...]
+    
+    Optional constraints can be:
+    
+    current_lims - A list of tuples [(l1,u1),(l2,u2)...(lN,uN)] each 
+    describing a lower and upper bound on the possible current in the
+    coil (order must match coil order in eq object). 
 
+    max_total_current - The maximum total current through the coilset.
+    
+    The class can be initialised using:
+
+    >>> constraints = constrain(xpoints = [(1.0, 1.1), (1.0,-1.0)]),
     >>> controlsystem(eq)
+    
+    where constraints will now attempt to create x-points at
+    (R,Z) = (1.0, 1.1) and (1.0, -1.1) during the inverse solve. 
+    
+    Constraints on the current_lims and max_total_current can be 
+    attributed to the orginal FreeGS package.  
 
-    where eq is an Equilibrium object which is modified by
-    the call.
-
-    The constraints which can be set are:
-
-    xpoints - A list of X-point (R,Z) locations
-
-    isoflux - A list of tuples (R1,Z1, R2,Z2)
-
-    psivals - A list of (R,Z,psi) values
-
-    At least one constraint must be included
-
-    gamma - A scalar, minimises the magnitude of the coil currents
     """
 
-    def __init__(self, xpoints=[], gamma=1e-12, isoflux=[], psivals=[]):
+    def __init__(
+        self, 
+        xpoints=[], 
+        gamma=1e-12, 
+        isoflux=[], 
+        psivals=[],
+        current_lims=None,
+        max_total_current=None,
+        ):
         """
-        Create an instance, specifying the constraints to apply
+        Create an instance, specifying the constraints to apply.
         """
+        
         self.xpoints = xpoints
         self.gamma = gamma
         self.isoflux = isoflux
         self.psivals = psivals
+        self.current_lims = current_lims
+        self.max_total_current = max_total_current
 
     def __call__(self, eq):
         """
-        Apply constraints to Equilibrium eq
+        Apply constraints to the equilbirium object (during inverse solve). 
         """
 
         tokamak = eq.getMachine()
@@ -115,10 +133,8 @@ class constrain(object):
         ncontrols = A.shape[1]
 
         # Calculate the change in coil current
-        current_change = dot(
-            inv(dot(transpose(A), A) + self.gamma**2 * eye(ncontrols)),
-            dot(transpose(A), b),
-        )
+        current_change = np.linalg.solve(dot(transpose(A), A) + self.gamma**2 * eye(ncontrols), dot(transpose(A), b))
+        
         # print("Current changes: " + str(current_change))
         tokamak.controlAdjust(current_change)
 
