@@ -37,52 +37,52 @@ from . import critical
 class constrain(object):
     """
     This class is used to adjust coil currents, according to some constraints,
-    during an inverse solve. 
-    
-    To use this class, create an instance by specifying at least one of the 
+    during an inverse solve.
+
+    To use this class, create an instance by specifying at least one of the
     following type of constraints:
-    
+
     xpoints - A list of X-point locations [(R,Z), ...]
 
     isoflux - A list of isoflux tuple pairs [(R1,Z1,R2,Z2), ...]
 
     psivals - A list of psi values/locations [(R,Z,psi), ...]
-    
+
     Optional constraints can be:
-    
-    current_lims - A list of tuples [(l1,u1),(l2,u2)...(lN,uN)] each 
+
+    current_lims - A list of tuples [(l1,u1),(l2,u2)...(lN,uN)] each
     describing a lower and upper bound on the possible current in the
-    coil (order must match coil order in eq object). 
+    coil (order must match coil order in eq object).
 
     max_total_current - The maximum total current through the coilset
     (can only be used if current_lims is set).
-    
+
     The class can be initialised using:
 
     >>> constraints = constrain(xpoints = [(1.0, 1.1), (1.0,-1.0)]),
     >>> controlsystem(eq)
-    
+
     where constraints will now attempt to create x-points at
-    (R,Z) = (1.0, 1.1) and (1.0, -1.1) during the inverse solve. 
-    
-    Constraints on the current_lims and max_total_current can be 
-    attributed to the original FreeGS package.  
+    (R,Z) = (1.0, 1.1) and (1.0, -1.1) during the inverse solve.
+
+    Constraints on the current_lims and max_total_current can be
+    attributed to the original FreeGS package.
 
     """
 
     def __init__(
-        self, 
-        xpoints=None, 
-        gamma=1e-12, 
-        isoflux=None, 
+        self,
+        xpoints=None,
+        gamma=1e-12,
+        isoflux=None,
         psivals=None,
         current_lims=None,
         max_total_current=None,
-        ):
+    ):
         """
         Create an instance, specifying the constraints to apply.
         """
-        
+
         self.xpoints = xpoints if xpoints is not None else []
         self.gamma = gamma
         self.isoflux = isoflux if isoflux is not None else []
@@ -92,7 +92,7 @@ class constrain(object):
 
     def __call__(self, eq):
         """
-        Apply constraints to the equilbirium object (during inverse solve). 
+        Apply constraints to the equilbirium object (during inverse solve).
         """
 
         tokamak = eq.getMachine()
@@ -158,18 +158,18 @@ class constrain(object):
         # calculate the change in coil current
         ATA = A.T @ A + self.gamma**2 * np.eye(ncontrols)
         ATb = A.T @ b
-        self.current_change = np.linalg.solve(ATA, ATb)        
-        
+        self.current_change = np.linalg.solve(ATA, ATb)
+
         # now we can check whether the optional constraints need to be included.
-        
+
         # to do this we use the solution found above as an initial guess in another
         # constrained optimsiation problem.
-        
+
         # the following  code is attributed to enhancements made to the orginal
         # FreeGS code.
-        
+
         if self.current_lims is not None:
-            
+
             # offset the current bounds using "current" currents in coils
             current_change_bounds = []
             current_values = tokamak.controlCurrents()
@@ -187,7 +187,7 @@ class constrain(object):
             # the objective function to minimize || A2x - b2 ||^2
             def objective(x):
                 return (np.linalg.norm((A2 @ x) - b2)) ** 2
-            
+
             # Additional constraints on the optimisation
             cons = []
 
@@ -205,19 +205,22 @@ class constrain(object):
             if self.current_change.shape[0] > 0:
                 x0 = self.current_change
                 sol = optimize.minimize(
-                    objective, x0, method="SLSQP", bounds=current_change_bnds, constraints=cons
+                    objective,
+                    x0,
+                    method="SLSQP",
+                    bounds=current_change_bnds,
+                    constraints=cons,
                 )
-                if sol.success: # check for convergence (else use prior currents)
+                if (
+                    sol.success
+                ):  # check for convergence (else use prior currents)
                     self.current_change = sol.x
-        
+
         # store info for user
         tokamak.controlAdjust(self.current_change)
 
         # ensure that the last constraint used is set in the Equilibrium
         eq._constraints = self
-
-
-
 
     def plot(self, axis=None, show=True):
         """

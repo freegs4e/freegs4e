@@ -348,7 +348,7 @@ class Equilibrium:
 
         # this is a temporary patch for singular input cases
         if type(R) != np.ndarray and type(Z) != np.ndarray:
-            return fpol[0,0] / R
+            return fpol[0, 0] / R
         else:
             return fpol / R
 
