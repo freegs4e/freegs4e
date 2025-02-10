@@ -77,7 +77,7 @@ class Equilibrium:
             The boundary condition function. Can be either `freeBoundary`
             or `fixedBoundary`.
         psi : np.array
-            Initial guess for plasma flux. If `None`, default initial guess used.
+            Initial guess for plasma flux [Webers/2pi]. If `None`, default initial guess used.
         current : float
             Plasma current [A].
         order : int
@@ -267,7 +267,7 @@ class Equilibrium:
 
         solver(x, b)
 
-        where x is the initial guess and b is the right hand side (thisshould solve Ax = b, 
+        where x is the initial guess and b is the right hand side (this should solve Ax = b, 
         returning the result).
         
                 
@@ -294,7 +294,7 @@ class Equilibrium:
         Parameters
         ----------
         psi : np.array
-            The initial guess. 
+            The initial guess [Webers/2pi]. 
         rhs : np.array
             The right hand side of the GS equation.
 
@@ -391,7 +391,7 @@ class Equilibrium:
         Returns
         -------
         float or np.array
-            The radial magnetic field due to the plasma at the given (R, Z) positions.
+            The radial magnetic field due to the plasma at the given (R, Z) positions [T].
         """
 
         return -self.psi_func(R, Z, dy=1, grid=False) / R
@@ -417,7 +417,7 @@ class Equilibrium:
         Returns
         -------
         float or np.array
-            The vertical magnetic field due to the plasma at the given (R, Z) positions.
+            The vertical magnetic field due to the plasma at the given (R, Z) positions [T].
         """
 
         return self.psi_func(R, Z, dx=1, grid=False) / R
@@ -443,7 +443,7 @@ class Equilibrium:
         Returns
         -------
         float or np.array
-            The total radial magnetic field at the given (R, Z) positions.
+            The total radial magnetic field at the given (R, Z) positions [T].
         """
         
         return self.plasmaBr(R, Z) + self.tokamak.Br(R, Z)
@@ -469,7 +469,7 @@ class Equilibrium:
         Returns
         -------
         float or np.array
-            The total vertical magnetic field at the given (R, Z) positions.
+            The total vertical magnetic field at the given (R, Z) positions [T].
         """
         
         return self.plasmaBz(R, Z) + self.tokamak.Bz(R, Z)
@@ -499,7 +499,7 @@ class Equilibrium:
         Returns
         -------
         float or np.array
-            The toroidal magnetic field at the given (R, Z) positions.
+            The toroidal magnetic field at the given (R, Z) positions [T].
         """
 
         # find f = R * Btor in the core
@@ -551,7 +551,7 @@ class Equilibrium:
         Returns
         -------
         float or np.array
-            The poloidal magnetic field at the given (R, Z) positions.
+            The poloidal magnetic field at the given (R, Z) positions [T].
         """
         
         Br = self.Br(R, Z)
@@ -577,7 +577,7 @@ class Equilibrium:
         Returns
         -------
         np.array
-            The total poloidal flux due to the plasma and the coils.          
+            The total poloidal flux due to the plasma and the coils [Webers/2pi].          
         """
 
         return self.plasma_psi + self.tokamak.calcPsiFromGreens(self._pgreen)
@@ -605,7 +605,7 @@ class Equilibrium:
         Returns
         -------
         float or np.array
-            The total poloidal flux due to the plasma and the coils at chosen (R,Z) locations. 
+            The total poloidal flux due to the plasma and the coils at chosen (R,Z) locations [Webers/2pi]. 
         """
         
         return self.psi_func(R, Z, grid=False) + self.tokamak.psi(R, Z)
@@ -655,7 +655,7 @@ class Equilibrium:
         -------
         np.array
             The total poloidal flux due to the plasma and the coils between the magnetic axis
-            and last closed flux surface.
+            and last closed flux surface [Webers/2pi].
         """
 
         return  np.linspace(self.psi_axis, self.psi_bndry, N)
@@ -757,7 +757,7 @@ class Equilibrium:
         Returns
         -------
         np.array
-            fpol at values of normalised psi.
+            fpol at values of normalised psi [Tm].
         """
         
         return self._profiles.fpol(psinorm)
@@ -772,7 +772,7 @@ class Equilibrium:
         Returns
         -------
         float
-            fvac value in vacuum. 
+            fvac value in vacuum [Tm]. 
         """
         
         return self._profiles.fvac()
@@ -824,7 +824,7 @@ class Equilibrium:
         Returns
         -------
         np.array
-            pprime (dp/dψ_n) at normalised flux values. 
+            pprime (dp/dψ_n) at normalised flux values [Pa/(Webers/2pi)]. 
         """
 
         return self._profiles.pprime(psinorm)
@@ -843,7 +843,7 @@ class Equilibrium:
         Returns
         -------
         np.array
-            ffprime (F * dF/dψ_n) at normalised flux values. 
+            ffprime (F * dF/dψ_n) at normalised flux values [T^2 m^2/(Wb/2pi)]. 
         """
         
         return self._profiles.ffprime(psinorm)
@@ -862,7 +862,7 @@ class Equilibrium:
         Returns
         -------
         np.array
-            pressure (p(ψ_n)) at normalised flux values. 
+            pressure (p(ψ_n)) at normalised flux values [Pa]. 
         """
         
         return self._profiles.pressure(psinorm)
@@ -898,7 +898,7 @@ class Equilibrium:
         Returns
         -------
         float
-            Area of the last closed flux surface (plasma boundary). 
+            Area of the last closed flux surface (plasma boundary) [m^2]. 
         """
 
         Rmin, Rmax, Zmin, Zmax, ZRmin, ZRmax, RZmin, RZmax, area, length = self.separatrix_metrics()
@@ -915,7 +915,7 @@ class Equilibrium:
         Returns
         -------
         float
-            Circumference of the last closed flux surface (plasma boundary). 
+            Circumference of the last closed flux surface (plasma boundary) [m]. 
         """
 
         Rmin, Rmax, Zmin, Zmax, ZRmin, ZRmax, RZmin, RZmax, area, length = self.separatrix_metrics()
@@ -975,7 +975,7 @@ class Equilibrium:
     
     def getForces(self):
         """
-        Calculates the forces on the coils.3
+        Calculates the forces on the coils.
         
         Parameters
         ----------
@@ -983,7 +983,7 @@ class Equilibrium:
         Returns
         -------
         dict
-            Coil lables with the associated force.  
+            Coil lables with the associated force [N].  
         """
         
         return self.tokamak.getForces(self)
@@ -1036,9 +1036,9 @@ class Equilibrium:
         Returns
         -------
         float
-            The inner separatrix major radius (at chosen Z).
+            The inner separatrix major radius (at chosen Z) [m].
         float
-            The outer separatrix major radius (at chosen Z).
+            The outer separatrix major radius (at chosen Z) [m].
         """
         
         # Find the closest index to requested Z
@@ -1106,7 +1106,7 @@ class Equilibrium:
         Returns
         -------
         list
-            List with the two (R,Z) coordinates: (R_in, Z) and (R_out, Z). 
+            List with the two (R,Z) coordinates: (R_in, Z) and (R_out, Z) [m]. 
         """
         
         # use shapely to define polygon of core plasma
@@ -1163,7 +1163,7 @@ class Equilibrium:
         Returns
         -------
         list 
-            Returns [R, Z, ψ(R, Z)] at magnetic axis location.       
+            Returns [R, Z, ψ(R, Z)] at magnetic axis location  [m, m, Webers/2pi].       
         """
         
         opt, xpt = critical.find_critical(self.R, self.Z, self.psi())
@@ -1509,7 +1509,7 @@ class Equilibrium:
         Returns
         -------
         list
-            Contains coordinates array and minimum distance to wall: [ (R,Z), min_distance ].
+            Contains coordinates array and minimum distance to wall: [ (R,Z), min_distance ] [m,m,m].
         """
 
         # create shapely linestring objects
@@ -1840,7 +1840,7 @@ class Equilibrium:
         Returns
         -------
         np.array
-            Returns an array of the (R,Z) strikepoints.
+            Returns an array of the (R,Z) strikepoints [m].
             
         """
 
@@ -1888,109 +1888,97 @@ class Equilibrium:
 
         return out
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def solve(self, profiles, Jtor=None, psi=None, psi_bndry=None):
+    def solve(self, 
+              profiles, 
+              Jtor=None, 
+              psi=None, 
+              psi_bndry=None
+              ):
         """
-        Calculate the plasma equilibrium given new profiles
-        replacing the current equilibrium.
-
-        This performs the linear Grad-Shafranov solve
-
-        profiles  - An object describing the plasma profiles.
-                    At minimum this must have methods:
-             .Jtor(R, Z, psi)   -> [nx, ny]
-             .pprime(psinorm)
-             .ffprime(psinorm)
-             .pressure(psinorm)
-             .fpol(psinorm)
-
-        Jtor : 2D array
-            If supplied, specifies the toroidal current at each (R,Z) point
-            If not supplied, Jtor is calculated from profiles by finding O,X-points
-
-        psi_bndry  - Poloidal flux to use as the separatrix (plasma boundary)
-                     If not given then X-point locations are used.
+        This is a legacy function that can be used to solve for the plasma equilibrium. It 
+        performs a linear Grad-Shafranov solve. 
+        
+        Parameters
+        ----------
+        profiles: class
+            Class containing the toroidal current density profile information.
+        Jtor: np.array
+            Toroidal current density field over (R,Z) [A/m^2].  
+        psi: np.array
+            Total poloidal magnetic flux over (R,Z) [Webers/2pi]. 
+        psi_bndry: float
+            Total poloidal magnetic flux on the plasma boundary [Webers/2pi]. 
+             
+        Returns
+        -------
+        None
+            Modifies the equilbirium class object in place.
+                        
         """
-
+        
+        # set profiles
         self._profiles = profiles
 
+        # calculate toroidal current density if not given (with psi)
         if Jtor is None:
-            # Calculate toroidal current density
-
             if psi is None:
                 psi = self.psi()
             Jtor = profiles.Jtor(self.R, self.Z, psi, psi_bndry=psi_bndry)
 
-        # Set plasma boundary
-        # Note that the Equilibrium is passed to the boundary function
-        # since the boundary may need to run the G-S solver (von Hagenow's method)
+        # set plasma boundary
+        # note that the Equilibrium is passed to the boundary function
+        # since the boundary may need to run the GS solver (von Hagenow's method)
         self._applyBoundary(self, Jtor, self.plasma_psi)
 
-        # Right hand side of G-S equation
+        # right hand side of GS equation
         rhs = -mu0 * self.R * Jtor
 
-        # Copy boundary conditions
+        # copy boundary conditions
         rhs[0, :] = self.plasma_psi[0, :]
         rhs[:, 0] = self.plasma_psi[:, 0]
         rhs[-1, :] = self.plasma_psi[-1, :]
         rhs[:, -1] = self.plasma_psi[:, -1]
 
-        # Call elliptic solver
+        # call elliptic solver
         plasma_psi = self._solver(self.plasma_psi, rhs)
 
         self._updatePlasmaPsi(plasma_psi)
 
-        # Update plasma current
-        dR = self.R[1, 0] - self.R[0, 0]
-        dZ = self.Z[0, 1] - self.Z[0, 0]
-        self._current = romb(romb(Jtor)) * dR * dZ
+        # update plasma current
+        self._current = romb(romb(Jtor)) * self.dR * self.dZ
 
-    def _updatePlasmaPsi(self, plasma_psi):
+    def _updatePlasmaPsi(self, 
+                         plasma_psi
+                         ):
         """
-        Sets the plasma psi data, updates spline interpolation coefficients.
-        Also updates:
-
-        self.mask        2D (R,Z) array which is 1 in the core, 0 outside
-        self.psi_axis    Value of psi on the magnetic axis
-        self.psi_bndry   Value of psi on plasma boundary
+        Sets the plasma psi data using spline interpoation coefficients. 
+        
+        Parameters
+        ----------
+        plasma_psi: np.array
+            Plasma poloidal magnetic flux over (R,Z) [Webers/2pi].
+             
+        Returns
+        -------
+        None
+            Modifies plasma_psi, mask, psi_axis, and psi_bndry in the class 
+            object in place.
+                        
         """
+        
+        # set plasma psi
         self.plasma_psi = plasma_psi
 
-        # Update spline interpolation
+        # update spline interpolation
         self.psi_func = interpolate.RectBivariateSpline(
             self.R[:, 0], self.Z[0, :], plasma_psi
         )
 
-        # Update the locations of the X-points, core mask, psi ranges.
+        # update locations of X-points, core mask, psi ranges.
         # Note that this may fail if there are no X-points, so it should not raise an error
         # Analyse the equilibrium, finding O- and X-points
         psi = self.psi()
         opt, xpt = critical.find_critical(self.R, self.Z, psi)
-        # if opt:
         self.psi_axis = opt[0][2]
 
         if len(xpt) > 0:
@@ -2011,155 +1999,43 @@ class Equilibrium:
             self.psi_bndry = None
             self.mask = None
 
-    def plot(self, axis=None, show=True, oxpoints=True):
+    def plot(self, 
+             axis=None, 
+             show=True, 
+             oxpoints=True
+             ):
         """
-        Plot the equilibrium flux surfaces
-
-        axis     - Specify the axis on which to plot
-        show     - Call matplotlib.pyplot.show() before returning
-        oxpoints - Plot X points as red circles, O points as green circles
-
+        Plot the equilibrium.
+        
+        Parameters
+        ----------
+        axis: object
+            Matplotlib axis object.  
+        show: bool
+            Calls matplotlib.pyplot.show() before returning.
+        oxpoints: bool
+            Plot X points and O points.
+             
         Returns
         -------
-
-        axis  object from Matplotlib
-
+        axis
+            Matplotlib axis object.
+                        
         """
+
         from .plotting import plotEquilibrium
 
         return plotEquilibrium(self, axis=axis, show=show, oxpoints=oxpoints)
 
-def refine(eq, nx=None, ny=None):
+def ellipse_points(
+    R0, 
+    Z0, 
+    A, 
+    B, 
+    N=360
+    ):
     """
-    Double grid resolution, returning a new equilibrium
-
-
-    """
-    # Interpolate the plasma psi
-    # plasma_psi = multigrid.interpolate(eq.plasma_psi)
-    # nx, ny = plasma_psi.shape
-
-    # By default double the number of intervals
-    if not nx:
-        nx = 2 * (eq.R.shape[0] - 1) + 1
-    if not ny:
-        ny = 2 * (eq.R.shape[1] - 1) + 1
-
-    result = Equilibrium(
-        tokamak=eq.tokamak,
-        Rmin=eq.Rmin,
-        Rmax=eq.Rmax,
-        Zmin=eq.Zmin,
-        Zmax=eq.Zmax,
-        boundary=eq._applyBoundary,
-        order=eq.order,
-        nx=nx,
-        ny=ny,
-    )
-
-    plasma_psi = eq.psi_func(result.R, result.Z, grid=False)
-
-    result._updatePlasmaPsi(plasma_psi)
-
-    if hasattr(eq, "_profiles"):
-        result._profiles = eq._profiles
-
-    if hasattr(eq, "control"):
-        result.control = eq.control
-
-    return result
-
-
-def coarsen(eq):
-    """
-    Reduce grid resolution, returning a new equilibrium
-    """
-    plasma_psi = multigrid.restrict(eq.plasma_psi)
-    nx, ny = plasma_psi.shape
-
-    result = Equilibrium(
-        tokamak=eq.tokamak,
-        Rmin=eq.Rmin,
-        Rmax=eq.Rmax,
-        Zmin=eq.Zmin,
-        Zmax=eq.Zmax,
-        nx=nx,
-        ny=ny,
-    )
-
-    result._updatePlasmaPsi(plasma_psi)
-
-    if hasattr(eq, "_profiles"):
-        result._profiles = eq._profiles
-
-    if hasattr(eq, "control"):
-        result.control = eq.control
-
-    return result
-
-
-def newDomain(
-    eq, Rmin=None, Rmax=None, Zmin=None, Zmax=None, nx=None, ny=None
-):
-    """Creates a new Equilibrium, solving in a different domain.
-    The domain size (Rmin, Rmax, Zmin, Zmax) and resolution (nx,ny)
-    are taken from the input equilibrium eq if not specified.
-    """
-    if Rmin is None:
-        Rmin = eq.Rmin
-    if Rmax is None:
-        Rmax = eq.Rmax
-    if Zmin is None:
-        Zmin = eq.Zmin
-    if Zmax is None:
-        Zmax = eq.Zmax
-    if nx is None:
-        nx = eq.R.shape[0]
-    if ny is None:
-        ny = eq.R.shape[0]
-
-    # Create a new equilibrium with the new domain
-    result = Equilibrium(
-        tokamak=eq.tokamak,
-        Rmin=Rmin,
-        Rmax=Rmax,
-        Zmin=Zmin,
-        Zmax=Zmax,
-        nx=nx,
-        ny=ny,
-    )
-
-    # Calculate the current on the old grid
-    profiles = eq._profiles
-    Jtor = profiles.Jtor(eq.R, eq.Z, eq.psi())
-
-    # Interpolate Jtor onto new grid
-    Jtor_func = interpolate.RectBivariateSpline(eq.R[:, 0], eq.Z[0, :], Jtor)
-    Jtor_new = Jtor_func(result.R, result.Z, grid=False)
-
-    result._applyBoundary(result, Jtor_new, result.plasma_psi)
-
-    # Right hand side of G-S equation
-    rhs = -mu0 * result.R * Jtor_new
-
-    # Copy boundary conditions
-    rhs[0, :] = result.plasma_psi[0, :]
-    rhs[:, 0] = result.plasma_psi[:, 0]
-    rhs[-1, :] = result.plasma_psi[-1, :]
-    rhs[:, -1] = result.plasma_psi[:, -1]
-
-    # Call elliptic solver
-    plasma_psi = result._solver(result.plasma_psi, rhs)
-
-    result._updatePlasmaPsi(plasma_psi)
-
-    # Solve once more, calculating Jtor using new psi
-    result.solve(profiles)
-
-    return result
-
-def ellipse_points(R0, Z0, A, B, N=360):
-    """This function generates the (R,Z) points of an ellipse:
+    This function generates the (R,Z) points of an ellipse:
     (x/A)**2 + (y/B)**2 = 1.
 
     Parameters
@@ -2181,6 +2057,192 @@ def ellipse_points(R0, Z0, A, B, N=360):
 
     return np.column_stack((R, Z))
 
+# def refine(eq, 
+#            nx=None, 
+#            ny=None
+#            ):
+#     """
+#     Function for changing the resolution of the equilibrium. 
+    
+#     Parameters
+#     ----------
+#     eq: class
+#         Equilibrium class object.   
+#     nx : int
+#         New number of radial grid points (must be of form 2^n + 1, n=0,1,2,3,4,5,...).
+#     ny : int
+#         New number of vertical grid points (must be of form 2^n + 1, n=0,1,2,3,4,5,...).
+            
+#     Returns
+#     -------
+#     class
+#         Returns a new equilibrium object with the new results.
+        
+#     """
+
+#     # by default double the number of intervals
+#     if not nx:
+#         nx = 2 * (eq.R.shape[0] - 1) + 1
+#     if not ny:
+#         ny = 2 * (eq.R.shape[1] - 1) + 1
+
+#     # define the new eq object
+#     result = Equilibrium(
+#         tokamak=eq.tokamak,
+#         Rmin=eq.Rmin,
+#         Rmax=eq.Rmax,
+#         Zmin=eq.Zmin,
+#         Zmax=eq.Zmax,
+#         boundary=eq._applyBoundary,
+#         order=eq.order,
+#         nx=nx,
+#         ny=ny,
+#     )
+
+#     # update the plasma psi from old eq
+#     plasma_psi = eq.psi_func(result.R, result.Z, grid=False)
+#     result._updatePlasmaPsi(plasma_psi)
+
+#     # copies profiles and constrain objects if needed
+#     if hasattr(eq, "_profiles"):
+#         result._profiles = eq._profiles
+
+#     if hasattr(eq, "control"):
+#         result.control = eq.control
+
+#     return result
+
+
+# def coarsen(eq):
+#     """
+#     Reduce grid resolution, returning a new equilibrium.
+    
+#     Parameters
+#     ----------
+#     eq: class
+#         Equilibrium class object.
+            
+#     Returns
+#     -------
+#     class
+#         Returns a new equilibrium object with the new results.
+        
+#     """
+
+#     plasma_psi = multigrid.restrict(eq.plasma_psi)
+#     nx, ny = plasma_psi.shape
+
+#     result = Equilibrium(
+#         tokamak=eq.tokamak,
+#         Rmin=eq.Rmin,
+#         Rmax=eq.Rmax,
+#         Zmin=eq.Zmin,
+#         Zmax=eq.Zmax,
+#         nx=nx,
+#         ny=ny,
+#     )
+
+#     result._updatePlasmaPsi(plasma_psi)
+
+#     if hasattr(eq, "_profiles"):
+#         result._profiles = eq._profiles
+
+#     if hasattr(eq, "control"):
+#         result.control = eq.control
+
+#     return result
+
+
+# def newDomain(
+#     eq, 
+#     Rmin=None, 
+#     Rmax=None, 
+#     Zmin=None, 
+#     Zmax=None, 
+#     nx=None, 
+#     ny=None
+#     ):
+#     """
+#     Creates a new equilibrium object, solving in a different domain.
+#     The domain size (Rmin, Rmax, Zmin, Zmax) and resolution (nx,ny)
+#     are taken from the input equilibrium eq if not specified.
+    
+#     Parameters
+#     ----------
+#     eq: class
+#         Equilibrium class object.
+#     Rmin : float
+#         Minimum major radius [m].
+#     Rmax : float
+#         Maximum major radius [m].
+#     Zmin : float
+#         Minimum height [m].
+#     Zmax : float
+#         Maximum height [m].
+#     nx : int
+#         Number of radial grid points (must be of form 2^n + 1, n=0,1,2,3,4,5,...).
+#     ny : int
+#         Number of vertical grid points (must be of form 2^n + 1, n=0,1,2,3,4,5,...).
+            
+#     Returns
+#     -------
+#     class
+#         Returns a new equilibrium object with the new results.
+        
+#     """
+
+#     if Rmin is None:
+#         Rmin = eq.Rmin
+#     if Rmax is None:
+#         Rmax = eq.Rmax
+#     if Zmin is None:
+#         Zmin = eq.Zmin
+#     if Zmax is None:
+#         Zmax = eq.Zmax
+#     if nx is None:
+#         nx = eq.R.shape[0]
+#     if ny is None:
+#         ny = eq.R.shape[0]
+
+#     # Create a new equilibrium with the new domain
+#     result = Equilibrium(
+#         tokamak=eq.tokamak,
+#         Rmin=Rmin,
+#         Rmax=Rmax,
+#         Zmin=Zmin,
+#         Zmax=Zmax,
+#         nx=nx,
+#         ny=ny,
+#     )
+
+#     # Calculate the current on the old grid
+#     profiles = eq._profiles
+#     Jtor = profiles.Jtor(eq.R, eq.Z, eq.psi())
+
+#     # Interpolate Jtor onto new grid
+#     Jtor_func = interpolate.RectBivariateSpline(eq.R[:, 0], eq.Z[0, :], Jtor)
+#     Jtor_new = Jtor_func(result.R, result.Z, grid=False)
+
+#     result._applyBoundary(result, Jtor_new, result.plasma_psi)
+
+#     # Right hand side of G-S equation
+#     rhs = -mu0 * result.R * Jtor_new
+
+#     # Copy boundary conditions
+#     rhs[0, :] = result.plasma_psi[0, :]
+#     rhs[:, 0] = result.plasma_psi[:, 0]
+#     rhs[-1, :] = result.plasma_psi[-1, :]
+#     rhs[:, -1] = result.plasma_psi[:, -1]
+
+#     # Call elliptic solver
+#     plasma_psi = result._solver(result.plasma_psi, rhs)
+
+#     result._updatePlasmaPsi(plasma_psi)
+
+#     # Solve once more, calculating Jtor using new psi
+#     result.solve(profiles)
+
+#     return result
 
 if __name__ == "__main__":
 
