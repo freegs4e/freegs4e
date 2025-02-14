@@ -93,12 +93,18 @@ class Equilibrium:
         self.tokamak = tokamak
 
         # assign bounds of computational domain
+        if Rmin > Rmax:
+            raise ValueError("Rmin must be smaller than Rmax.")
+        if Zmin > Zmax:
+            raise ValueError("Zmin must be smaller than Zmax.")
         self.Rmin = Rmin
         self.Rmax = Rmax
         self.Zmin = Zmin
         self.Zmax = Zmax
 
         # assign number of grid points
+        if nx < 0 or ny < 0:
+            raise ValueError("nx and ny must be integers greater than zero.")
         self.nx = nx
         self.ny = ny
 
@@ -119,6 +125,9 @@ class Equilibrium:
             # Starting guess for psi
             psi = self.create_psi_plasma_default()
             self.gpars = np.array([0.5, 0.5, 0, 2])
+
+        if psi.shape != (nx, ny):
+            raise ValueError("Shape of psi must match grid size (nx, ny).")
         self.plasma_psi = psi
 
         # generate Greens function mappings (used
